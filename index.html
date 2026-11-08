@@ -312,6 +312,10 @@ const ctx = canvas.getContext("2d");
 let width, height, stars = [];
 let showGraduationPhoto = false;
 
+/* Taurus constellation animation state */
+let showStarCoordinates = false;
+let constellationStartedAt = 0;
+
 const graduationPhoto = new Image();
 graduationPhoto.src = "images/chiayi.jpg";
 
@@ -350,6 +354,256 @@ function drawStars() {
         ctx.fill();
     });
 }
+
+/* ===================================
+   TAURUS CONSTELLATION — 10 SECONDS
+=================================== */
+
+function drawStarCoordinates(time) {
+    if (!showStarCoordinates) return;
+
+    const elapsed = time - constellationStartedAt;
+    const duration = 10000;
+
+    if (elapsed >= duration) {
+        showStarCoordinates = false;
+        return;
+    }
+
+    const scale = Math.max(
+        0.72,
+        Math.min(width / 390, height / 750, 1)
+    );
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    const points = [
+        [-95, -65],
+        [-45, -105],
+        [15, -82],
+        [78, -110],
+        [105, -38],
+        [55, 15],
+        [-15, 35],
+        [-80, 5]
+    ];
+
+    const clamp = (value, min, max) =>
+        Math.max(min, Math.min(max, value));
+
+    /* Overall fade in and fade out */
+
+    let overallOpacity = 1;
+
+    if (elapsed < 800) {
+        overallOpacity = elapsed / 800;
+    } else if (elapsed > 8000) {
+        overallOpacity = (10000 - elapsed) / 2000;
+    }
+
+    ctx.save();
+    ctx.globalAlpha = clamp(overallOpacity, 0, 1);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    /* 1. Constellation appears: 0–3 seconds */
+
+    const chartProgress = clamp(elapsed / 3000, 0, 1);
+
+    ctx.save();
+    ctx.translate(centerX, centerY - 75 * scale);
+    ctx.scale(scale, scale);
+
+    const visibleSegments =
+        chartProgress * (points.length - 1);
+
+    ctx.beginPath();
+    ctx.moveTo(points[0][0], points[0][1]);
+
+    for (let i = 0; i < points.length - 1; i++) {
+        if (visibleSegments >= i + 1) {
+            ctx.lineTo(
+                points[i + 1][0],
+                points[i + 1][1]
+            );
+        } else if (visibleSegments > i) {
+            const progress = visibleSegments - i;
+
+            ctx.lineTo(
+                points[i][0] +
+                (points[i + 1][0] - points[i][0]) * progress,
+
+                points[i][1] +
+                (points[i + 1][1] - points[i][1]) * progress
+            );
+
+            break;
+        } else {
+            break;
+        }
+    }
+
+    ctx.strokeStyle = "rgba(180,235,255,.85)";
+    ctx.lineWidth = 1.2;
+    ctx.shadowColor = "#8affdf";
+    ctx.shadowBlur = 14;
+    ctx.stroke();
+
+    /* Stars light up one by one */
+
+    points.forEach((point, index) => {
+        const appear = clamp(
+            chartProgress * points.length - index,
+            0,
+            1
+        );
+
+        if (appear <= 0) return;
+
+        const glow =
+            2.5 + Math.sin(time * 0.005 + index) * 1.2;
+
+        ctx.globalAlpha = overallOpacity * appear;
+
+        ctx.beginPath();
+        ctx.arc(point[0], point[1], glow, 0, Math.PI * 2);
+        ctx.fillStyle = "#eaffff";
+        ctx.shadowColor = "#8affdf";
+        ctx.shadowBlur = 20;
+        ctx.fill();
+    });
+
+    ctx.restore();
+
+    /* 2. Meteor flies across: 3–5 seconds */
+
+    if (elapsed >= 3000 && elapsed <= 5000) {
+        const progress = clamp(
+            (elapsed - 3000) / 2000,
+            0,
+            1
+        );
+
+        const startX = width * 0.85;
+        const startY = height * 0.20;
+        const endX = width * 0.25;
+        const endY = height * 0.48;
+
+        const x = startX + (endX - startX) * progress;
+        const y = startY + (endY - startY) * progress;
+
+        const tail = 100 * scale;
+
+        const gradient = ctx.createLinearGradient(
+            x, y,
+            x + tail, y - tail * 0.48
+        );
+
+        gradient.addColorStop(0, "rgba(255,255,255,1)");
+        gradient.addColorStop(0.3, "rgba(160,240,255,.7)");
+        gradient.addColorStop(1, "rgba(160,240,255,0)");
+
+        ctx.save();
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "#b9faff";
+        ctx.shadowBlur = 18;
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + tail, y - tail * 0.48);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    /* 3. Taurus information appears */
+
+    const infoOpacity = clamp(
+        (elapsed - 4800) / 700,
+        0,
+        1
+    );
+
+    ctx.save();
+    ctx.globalAlpha = overallOpacity * infoOpacity;
+
+    ctx.fillStyle = "#eafff8";
+    ctx.shadowColor = "#8affdf";
+    ctx.shadowBlur = 18;
+
+    ctx.font = `${30 * scale}px Georgia, serif`;
+    ctx.fillText("♉", centerX, centerY + 15 * scale);
+
+    ctx.font = `${10 * scale}px Arial`;
+    ctx.fillStyle = "rgba(220,245,255,.9)";
+    ctx.fillText(
+        "HER STAR COORDINATES",
+        centerX,
+        centerY + 55 * scale
+    );
+
+    ctx.font = `${17 * scale}px Georgia, serif`;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(
+        "MAY 03",
+        centerX,
+        centerY + 82 * scale
+    );
+
+    ctx.font = `${10 * scale}px Arial`;
+    ctx.fillStyle = "rgba(200,245,240,.85)";
+    ctx.fillText(
+        "CHIAYI-001",
+        centerX,
+        centerY + 105 * scale
+    );
+
+    ctx.restore();
+
+    /* 4. Romantic message appears: 5–8 seconds */
+
+    const quoteOpacity = clamp(
+        (elapsed - 5000) / 1000,
+        0,
+        1
+    );
+
+    ctx.save();
+    ctx.globalAlpha = overallOpacity * quoteOpacity;
+
+    ctx.fillStyle = "rgba(245,255,255,.98)";
+    ctx.shadowColor = "#8affdf";
+    ctx.shadowBlur = 18;
+
+    ctx.font = `${14 * scale}px Georgia, "Songti SC", serif`;
+
+    ctx.fillText(
+        "纵使星河万里，",
+        centerX,
+        centerY + 158 * scale
+    );
+
+    ctx.fillText(
+        "我的目光，始终为你停留。",
+        centerX,
+        centerY + 184 * scale
+    );
+
+    ctx.restore();
+    ctx.restore();
+}
+
+/* ===================================
+   DRAW ORIGINAL AURORA
+=================================== */
 
 function drawAurora(time) {
     ctx.clearRect(0, 0, width, height);
@@ -450,7 +704,11 @@ function drawAurora(time) {
     });
 
     ctx.restore();
+
     drawStars();
+
+    /* Draw Taurus constellation above the aurora and stars */
+    drawStarCoordinates(time);
 }
 
 function animate(time) {
@@ -658,6 +916,30 @@ window.addEventListener("pointerdown", event => {
         tapCount = 0;
         secretGate.classList.add("active");
         secretPassword.focus();
+    }
+});
+
+
+/* ===================================
+   HIDDEN TAURUS CONSTELLATION TRIGGER
+=================================== */
+
+window.addEventListener("pointerdown", event => {
+
+    if (
+        secretGate.classList.contains("active") ||
+        secretMessage.classList.contains("show")
+    ) {
+        return;
+    }
+
+    const hiddenStarArea =
+        event.clientX < width * 0.18 &&
+        event.clientY > height * 0.82;
+
+    if (hiddenStarArea) {
+        showStarCoordinates = true;
+        constellationStartedAt = performance.now();
     }
 });
 
