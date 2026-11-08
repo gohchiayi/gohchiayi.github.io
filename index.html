@@ -8,237 +8,115 @@
 <title>GOH CHIAYI — A Sky Full of Memories</title>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#030712;font-family:Georgia,"Times New Roman",serif}
+body{color:white}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+
+.content{
+ position:relative;z-index:2;height:100%;min-height:100dvh;
+ display:flex;flex-direction:column;justify-content:center;
+ align-items:center;text-align:center;padding:20px;
+ pointer-events:none
+}
+.name{font-size:clamp(30px,8vw,48px);font-weight:400;letter-spacing:8px;text-shadow:0 0 25px rgba(130,255,220,.45)}
+.subtitle{margin-top:15px;font-family:Arial,sans-serif;font-size:10px;letter-spacing:5px;color:rgba(220,245,255,.7)}
+.line{width:55px;height:1px;margin:25px 0;background:rgba(180,255,240,.7);box-shadow:0 0 12px #8affdf}
+.footer{font-family:Arial,sans-serif;font-size:9px;letter-spacing:3px;color:rgba(220,245,255,.65)}
+
+.countdown-card{
+ margin-top:28px;padding:15px 16px;width:min(90vw,340px);
+ border:1px solid rgba(160,210,255,.2);border-radius:14px;
+ background:rgba(5,15,35,.48);backdrop-filter:blur(8px);
+ pointer-events:auto
+}
+.countdown-title{font-family:Arial,sans-serif;font-size:9px;letter-spacing:3px;color:rgba(200,225,255,.8);margin-bottom:12px}
+.countdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.countdown-number{font-size:clamp(19px,5vw,26px);color:white;text-shadow:0 0 12px rgba(130,190,255,.6);font-variant-numeric:tabular-nums}
+.countdown-unit{margin-top:4px;font-family:Arial,sans-serif;font-size:8px;letter-spacing:1px;color:rgba(190,215,245,.7)}
+.wish-open{
+ margin-top:14px;padding:10px 22px;border:1px solid rgba(160,210,255,.35);
+ border-radius:30px;background:rgba(10,25,50,.45);color:rgba(230,245,255,.9);
+ font-family:Georgia,serif;font-size:10px;letter-spacing:3px;cursor:pointer;
+ pointer-events:auto
 }
 
-html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #030712;
-    font-family: Georgia, "Times New Roman", serif;
+/* Graduation password */
+#secretGate{
+ position:fixed;inset:0;z-index:20;display:none;align-items:center;
+ justify-content:center;padding:24px;background:rgba(2,8,20,.94);
+ backdrop-filter:blur(12px)
 }
-
-body { color: white; }
-
-canvas {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+#secretGate.active{display:flex}
+.secret-card{width:min(100%,340px);text-align:center;color:rgba(230,255,250,.9)}
+.secret-title{font-size:11px;letter-spacing:5px;margin-bottom:28px;color:rgba(190,240,235,.7)}
+#secretPassword{
+ width:100%;padding:14px 10px;border:0;border-bottom:1px solid rgba(150,240,220,.45);
+ outline:none;background:transparent;color:white;text-align:center;
+ font-family:Georgia,serif;font-size:18px;letter-spacing:4px
 }
+#secretPassword::placeholder{color:rgba(220,245,255,.3);font-size:12px;letter-spacing:3px}
+#secretUnlock{margin-top:25px;padding:10px 30px;border:1px solid rgba(150,240,220,.35);background:transparent;color:rgba(220,255,245,.85);font-family:Georgia,serif;letter-spacing:3px;font-size:10px}
+#secretError{min-height:20px;margin-top:18px;font-size:11px;color:rgba(255,170,170,.75);letter-spacing:1px}
+#secretClose{margin-top:20px;border:0;background:transparent;color:rgba(220,245,255,.4);font-size:11px}
 
-.content {
-    position: relative;
-    z-index: 2;
-    height: 100%;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 24px;
-    pointer-events: none;
+/* Graduation letter */
+#secretMessage{
+ position:fixed;inset:0;z-index:30;display:none;align-items:center;
+ justify-content:center;padding:20px;background:rgba(2,8,20,.25);
+ opacity:0;transition:opacity 3s ease
 }
-
-.name {
-    font-size: clamp(30px, 8vw, 48px);
-    font-weight: 400;
-    letter-spacing: 8px;
-    text-shadow: 0 0 25px rgba(130,255,220,.45);
+#secretMessage.show{opacity:1}
+.letter{
+ width:min(100%,540px);max-height:calc(100dvh - 40px);overflow-y:auto;
+ padding:30px 23px;text-align:center;background:rgba(3,10,24,.38);
+ border:1px solid rgba(190,240,235,.16);border-radius:14px;
+ backdrop-filter:blur(5px)
 }
+.letter-title{font-size:clamp(25px,7vw,32px);font-weight:400;letter-spacing:5px;color:white;text-shadow:0 0 25px rgba(100,255,220,.45);opacity:0;transform:translateY(15px);transition:all 2.5s ease}
+#secretMessage.show .letter-title{opacity:1;transform:translateY(0)}
+.letter-subtitle{margin:14px 0 25px;font-size:11px;letter-spacing:3px;color:rgba(220,240,245,.75)}
+.letter-divider{width:45px;height:1px;margin:0 auto 25px;background:rgba(180,255,240,.65);box-shadow:0 0 12px #8affdf}
+.letter-body{text-align:left;font-size:clamp(15px,4vw,17px);line-height:2.05;letter-spacing:1px;color:rgba(245,250,255,.96);white-space:pre-wrap;overflow-wrap:break-word}
+.letter-signature{margin-top:28px;text-align:right;font-size:15px;line-height:2;letter-spacing:1px;color:rgba(220,245,240,.9)}
 
-.subtitle {
-    margin-top: 20px;
-    font-family: Arial, sans-serif;
-    font-size: 10px;
-    letter-spacing: 5px;
-    color: rgba(220,245,255,.7);
+/* Secret wishes */
+#wishPanel{
+ position:fixed;inset:0;z-index:40;display:none;align-items:center;
+ justify-content:center;padding:20px;background:rgba(2,8,20,.95);
+ backdrop-filter:blur(14px)
 }
-
-.line {
-    width: 55px;
-    height: 1px;
-    margin: 32px 0;
-    background: rgba(180,255,240,.7);
-    box-shadow: 0 0 12px #8affdf;
+#wishPanel.active{display:flex}
+.wish-card{
+ width:min(100%,420px);max-height:88dvh;overflow-y:auto;padding:25px 20px;
+ border:1px solid rgba(160,210,255,.2);border-radius:16px;
+ background:rgba(7,17,38,.94);color:white;text-align:center
 }
-
-.footer {
-    font-family: Arial, sans-serif;
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: rgba(220,245,255,.65);
+.wish-heading{font-size:17px;letter-spacing:4px;margin-bottom:8px}
+.wish-description{font-family:Arial,sans-serif;font-size:10px;line-height:1.8;color:rgba(195,220,255,.7);margin-bottom:18px}
+.wish-input{
+ display:block;width:100%;margin-top:12px;padding:12px;
+ border:1px solid rgba(160,210,255,.2);border-radius:8px;
+ outline:none;background:rgba(255,255,255,.04);color:white;font-size:14px
 }
-
-/* Password interface */
-
-#secretGate {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background: rgba(2,8,20,.94);
-    backdrop-filter: blur(12px);
+.wish-input::placeholder{color:rgba(220,235,255,.4)}
+#wishText{min-height:100px;resize:vertical}
+.wish-action{
+ width:100%;margin-top:14px;padding:12px;border:1px solid rgba(160,210,255,.3);
+ border-radius:8px;background:rgba(80,130,200,.15);color:white;
+ letter-spacing:2px;cursor:pointer
 }
+#wishClose{margin-top:16px;border:0;background:transparent;color:rgba(220,235,255,.6);cursor:pointer}
+#wishStatus{min-height:22px;margin-top:12px;color:rgba(190,220,255,.85);font-size:11px;line-height:1.6}
+#wishList{margin-top:18px;text-align:left}
+.wish-item{padding:12px;margin-top:9px;border:1px solid rgba(160,210,255,.16);border-radius:8px;background:rgba(255,255,255,.035)}
+.wish-item-text{font-size:13px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.wish-delete{margin-top:8px;border:0;background:transparent;color:rgba(255,170,170,.8);font-size:11px;cursor:pointer}
 
-#secretGate.active { display: flex; }
-
-.secret-card {
-    width: min(100%, 340px);
-    text-align: center;
-    color: rgba(230,255,250,.9);
-}
-
-.secret-title {
-    font-size: 11px;
-    letter-spacing: 5px;
-    margin-bottom: 28px;
-    color: rgba(190,240,235,.7);
-}
-
-#secretPassword {
-    width: 100%;
-    padding: 14px 10px;
-    border: none;
-    border-bottom: 1px solid rgba(150,240,220,.45);
-    outline: none;
-    background: transparent;
-    color: white;
-    text-align: center;
-    font-family: Georgia, serif;
-    font-size: 18px;
-    letter-spacing: 4px;
-}
-
-#secretPassword::placeholder {
-    color: rgba(220,245,255,.3);
-    font-size: 12px;
-    letter-spacing: 3px;
-}
-
-#secretUnlock {
-    margin-top: 25px;
-    padding: 10px 30px;
-    border: 1px solid rgba(150,240,220,.35);
-    background: transparent;
-    color: rgba(220,255,245,.85);
-    font-family: Georgia, serif;
-    letter-spacing: 3px;
-    font-size: 10px;
-}
-
-#secretError {
-    min-height: 20px;
-    margin-top: 18px;
-    font-size: 11px;
-    color: rgba(255,170,170,.75);
-    letter-spacing: 1px;
-}
-
-#secretClose {
-    margin-top: 20px;
-    border: none;
-    background: transparent;
-    color: rgba(220,245,255,.4);
-    font-size: 11px;
-}
-
-/* Graduation message */
-
-#secretMessage {
-    position: fixed;
-    inset: 0;
-    z-index: 30;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(2,8,20,.25);
-    opacity: 0;
-    transition: opacity 3s ease;
-}
-
-#secretMessage.show { opacity: 1; }
-
-.letter {
-    width: min(100%, 540px);
-    max-height: calc(100dvh - 40px);
-    overflow-y: auto;
-    padding: 30px 23px;
-    text-align: center;
-    background: rgba(3,10,24,.38);
-    border: 1px solid rgba(190,240,235,.16);
-    border-radius: 14px;
-    backdrop-filter: blur(5px);
-    scrollbar-width: thin;
-    scrollbar-color: rgba(150,240,220,.3) transparent;
-}
-
-.letter-title {
-    font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
-    font-size: clamp(25px,7vw,32px);
-    font-weight: 400;
-    letter-spacing: 5px;
-    color: rgba(245,250,255,.98);
-    text-shadow: 0 0 25px rgba(100,255,220,.45);
-    opacity: 0;
-    transform: translateY(15px);
-    transition: opacity 2.5s ease, transform 2.5s ease;
-}
-
-#secretMessage.show .letter-title {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.letter-subtitle {
-    margin-top: 14px;
-    margin-bottom: 25px;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: rgba(220,240,245,.75);
-}
-
-.letter-divider {
-    width: 45px;
-    height: 1px;
-    margin: 0 auto 25px;
-    background: rgba(180,255,240,.65);
-    box-shadow: 0 0 12px #8affdf;
-}
-
-.letter-body {
-    text-align: left;
-    font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
-    font-size: clamp(15px,4vw,17px);
-    line-height: 2.05;
-    letter-spacing: 1px;
-    color: rgba(245,250,255,.96);
-    text-shadow: 0 0 15px rgba(100,255,220,.2);
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-}
-
-.letter-signature {
-    margin-top: 28px;
-    text-align: right;
-    font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
-    font-size: 15px;
-    line-height: 2;
-    letter-spacing: 1px;
-    color: rgba(220,245,240,.9);
-}
-
-@media (max-height: 600px) {
-    .letter { padding: 18px; }
+@media(max-height:700px){
+ .line{margin:16px 0}
+ .countdown-card{margin-top:16px;padding:11px}
+ .letter{padding:18px}
 }
 </style>
 </head>
@@ -246,802 +124,833 @@ canvas {
 <body>
 
 <canvas id="sky"></canvas>
-
 <audio id="bgMusic" src="audio/graduation.mp3" preload="auto" loop></audio>
 
 <div class="content">
-    <div class="name">GOH CHIAYI</div>
-    <div class="subtitle">A SKY FULL OF MEMORIES</div>
-    <div class="line"></div>
-    <div class="footer">FOREVER UNDER THE SAME SKY</div>
+ <div class="name">GOH CHIAYI</div>
+ <div class="subtitle">A SKY FULL OF MEMORIES</div>
+ <div class="line"></div>
+ <div class="footer">FOREVER UNDER THE SAME SKY</div>
+
+ <div class="countdown-card">
+  <div class="countdown-title">COUNTDOWN TO GRADUATION</div>
+  <div class="countdown-grid">
+   <div><div class="countdown-number" id="days">---</div><div class="countdown-unit">DAYS</div></div>
+   <div><div class="countdown-number" id="hours">--</div><div class="countdown-unit">HOURS</div></div>
+   <div><div class="countdown-number" id="minutes">--</div><div class="countdown-unit">MINUTES</div></div>
+   <div><div class="countdown-number" id="seconds">--</div><div class="countdown-unit">SECONDS</div></div>
+  </div>
+ </div>
+
+ <button class="wish-open" id="openWishes">✦ SECRET WISHES ✦</button>
 </div>
 
 <div id="secretGate">
-    <div class="secret-card">
-        <div class="secret-title">A LITTLE SECRET</div>
-
-        <input
-            id="secretPassword"
-            type="password"
-            placeholder="Enter the secret"
-            autocomplete="off"
-            autocapitalize="off"
-            spellcheck="false"
-        >
-
-        <button id="secretUnlock">UNLOCK</button>
-        <div id="secretError"></div>
-        <button id="secretClose">CLOSE</button>
-    </div>
+ <div class="secret-card">
+  <div class="secret-title">A LITTLE SECRET</div>
+  <input id="secretPassword" type="password" placeholder="Enter the secret" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <button id="secretUnlock">UNLOCK</button>
+  <div id="secretError"></div>
+  <button id="secretClose">CLOSE</button>
+ </div>
 </div>
 
 <div id="secretMessage">
-    <div class="letter">
-        <div class="letter-title">致青春，致未来</div>
-        <div class="letter-subtitle">献给吴嘉怡</div>
-        <div class="letter-divider"></div>
-        <div class="letter-body" id="decryptedText"></div>
-        <div class="letter-signature">—— 傅玄策</div>
-    </div>
+ <div class="letter">
+  <div class="letter-title">致青春，致未来</div>
+  <div class="letter-subtitle">献给吴嘉怡</div>
+  <div class="letter-divider"></div>
+  <div class="letter-body" id="decryptedText"></div>
+  <div class="letter-signature">—— 傅玄策</div>
+ </div>
+</div>
+
+<div id="wishPanel">
+ <div class="wish-card">
+  <div class="wish-heading">✦ SECRET WISHES ✦</div>
+  <div class="wish-description">
+   Some wishes are meant to stay among the stars.
+   <br>让星河替你保管秘密。
+  </div>
+
+  <input id="wishPassword" class="wish-input" type="password" placeholder="设置或输入愿望密码" autocomplete="new-password">
+  <textarea id="wishText" class="wish-input" placeholder="写下你的秘密愿望……"></textarea>
+  <button class="wish-action" id="saveWish">✦ 封存愿望 ✦</button>
+  <div id="wishStatus"></div>
+  <div id="wishList"></div>
+  <button id="wishClose">CLOSE</button>
+ </div>
 </div>
 
 <script>
-
 /* ===================================
-   ORIGINAL AURORA ANIMATION
+   ORIGINAL AURORA + CANVAS
 =================================== */
 
-const canvas = document.getElementById("sky");
-const ctx = canvas.getContext("2d");
+const canvas=document.getElementById("sky");
+const ctx=canvas.getContext("2d");
+let width,height,stars=[];
+let showGraduationPhoto=false;
+let showStarCoordinates=false;
+let constellationStartedAt=0;
 
-let width, height, stars = [];
-let showGraduationPhoto = false;
+const graduationPhoto=new Image();
+graduationPhoto.src="images/chiayi.jpg";
 
-let showStarCoordinates = false;
-let constellationStartedAt = 0;
-
-const graduationPhoto = new Image();
-graduationPhoto.src = "images/chiayi.jpg";
-
-function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    width = window.innerWidth;
-    height = window.innerHeight;
-
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    stars = Array.from({length: 130}, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: Math.random() * 1.5,
-        a: Math.random(),
-        speed: Math.random() * 0.012 + 0.003
-    }));
+function resize(){
+ const dpr=Math.min(window.devicePixelRatio||1,2);
+ width=window.innerWidth;
+ height=window.innerHeight;
+ canvas.width=width*dpr;
+ canvas.height=height*dpr;
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ stars=Array.from({length:130},()=>({
+  x:Math.random()*width,y:Math.random()*height,
+  r:Math.random()*1.5,a:Math.random(),
+  speed:Math.random()*.012+.003
+ }));
 }
-
-window.addEventListener("resize", resize);
+window.addEventListener("resize",resize);
 resize();
 
-function drawStars() {
-    stars.forEach(s => {
-        s.a += s.speed;
-
-        const opacity = 0.25 + Math.abs(Math.sin(s.a)) * 0.65;
-
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(220,245,255,${opacity})`;
-        ctx.fill();
-    });
+function drawStars(){
+ stars.forEach(s=>{
+  s.a+=s.speed;
+  const opacity=.25+Math.abs(Math.sin(s.a))*.65;
+  ctx.beginPath();
+  ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+  ctx.fillStyle=`rgba(220,245,255,${opacity})`;
+  ctx.fill();
+ });
 }
 
 /* ===================================
-   CINEMATIC 3D TAURUS — 10 SECONDS
-   Original aurora remains visible
+   3D TAURUS PARTICLE CONSTELLATION
+   10 seconds, aurora stays running
 =================================== */
 
-function drawStarCoordinates(time) {
-    if (!showStarCoordinates) return;
-
-    const elapsed = time - constellationStartedAt;
-    const duration = 10000;
-
-    if (elapsed >= duration) {
-        showStarCoordinates = false;
-        return;
-    }
-
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-
-    const ease = v => {
-        v = clamp(v, 0, 1);
-        return v * v * (3 - 2 * v);
-    };
-
-    const fadeIn = ease(elapsed / 1000);
-    const fadeOut = 1 - ease((elapsed - 8200) / 1800);
-    const opacity = fadeIn * fadeOut;
-
-    /* Responsive cinematic composition */
-
-    const scale = Math.min(width / 390, height / 780, 1);
-    const cx = width / 2;
-    const cy = height * 0.32;
-
-    ctx.save();
-    ctx.globalAlpha = opacity;
-
-    /* 3D star coordinates: x, y, depth */
-
-    const stars3D = [
-        [-105, -25, 10],
-        [-65, -75, 0],
-        [-15, -55, 25],
-        [30, -90, -15],
-        [75, -48, 15],
-        [105, 5, -10],
-        [45, 15, 30],
-        [-10, 35, -20],
-        [-65, 10, 15],
-        [5, -5, 45],
-        [115, -85, -35]
-    ];
-
-    const connections = [
-        [0,1], [1,2], [2,3],
-        [2,4], [4,5], [4,6],
-        [6,7], [7,8], [2,9],
-        [3,10]
-    ];
-
-    /* Slow camera rotation and tilt */
-
-    const rotation = elapsed * 0.00022;
-    const tilt = Math.sin(elapsed * 0.0004) * 0.12;
-    const camera = 520;
-
-    function project(point) {
-        const [x, y, z] = point;
-
-        const rx =
-            x * Math.cos(rotation) -
-            z * Math.sin(rotation);
-
-        const rz =
-            x * Math.sin(rotation) +
-            z * Math.cos(rotation);
-
-        const ry =
-            y * Math.cos(tilt) -
-            rz * Math.sin(tilt);
-
-        const depth =
-            y * Math.sin(tilt) +
-            rz * Math.cos(tilt);
-
-        const perspective = camera / (camera + depth + 130);
-
-        return {
-            x: cx + rx * perspective * scale,
-            y: cy + ry * perspective * scale,
-            size: perspective,
-            depth
-        };
-    }
-
-    const projected = stars3D.map(project);
-
-    /* Atmospheric glow */
-
-    const atmosphere = ctx.createRadialGradient(
-        cx, cy, 5,
-        cx, cy, 190 * scale
-    );
-
-    atmosphere.addColorStop(0, "rgba(60,160,255,.13)");
-    atmosphere.addColorStop(0.5, "rgba(80,100,255,.055)");
-    atmosphere.addColorStop(1, "rgba(0,0,0,0)");
-
-    ctx.fillStyle = atmosphere;
-
-    ctx.fillRect(
-        cx - 200 * scale,
-        cy - 200 * scale,
-        400 * scale,
-        400 * scale
-    );
-
-    /* Floating cosmic particles */
-
-    for (let i = 0; i < 65; i++) {
-        const angle = i * 2.399;
-        const distance = 75 + (i * 37 % 160);
-
-        const px =
-            cx + Math.cos(angle + time * 0.0001) *
-            distance * scale;
-
-        const py =
-            cy + Math.sin(angle) *
-            distance * 0.55 * scale;
-
-        ctx.beginPath();
-
-        ctx.arc(
-            px,
-            py,
-            (i % 3 + 0.5) * scale,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.fillStyle =
-            `rgba(180,220,255,${0.18 + (i % 4) * 0.08})`;
-
-        ctx.fill();
-    }
-
-    /* Constellation lines appear progressively */
-
-    const progress = ease(elapsed / 3000);
-
-    connections.forEach(([a, b], index) => {
-        const start = projected[a];
-        const end = projected[b];
-
-        const reveal = clamp(
-            progress * connections.length - index,
-            0,
-            1
-        );
-
-        if (reveal <= 0) return;
-
-        const x2 = start.x + (end.x - start.x) * reveal;
-        const y2 = start.y + (end.y - start.y) * reveal;
-
-        const gradient = ctx.createLinearGradient(
-            start.x, start.y,
-            x2, y2
-        );
-
-        gradient.addColorStop(0, "rgba(120,190,255,.12)");
-        gradient.addColorStop(0.5, "rgba(205,235,255,.9)");
-        gradient.addColorStop(1, "rgba(110,210,255,.3)");
-
-        ctx.beginPath();
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(x2, y2);
-
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 1.15 * scale;
-        ctx.shadowColor = "#8acbff";
-        ctx.shadowBlur = 12;
-        ctx.stroke();
-    });
-
-    /* Glowing stars */
-
-    projected.forEach((p, index) => {
-        const appear = ease((elapsed - index * 170) / 650);
-
-        if (appear <= 0) return;
-
-        const pulse =
-            0.8 + Math.sin(time * 0.003 + index) * 0.2;
-
-        const radius =
-            (2.2 + (index % 3) * 0.7) *
-            p.size * scale;
-
-        ctx.save();
-        ctx.globalAlpha = opacity * appear;
-
-        const glow = ctx.createRadialGradient(
-            p.x, p.y, 0,
-            p.x, p.y, radius * 7
-        );
-
-        glow.addColorStop(0, "rgba(255,255,255,1)");
-        glow.addColorStop(0.2, "rgba(160,220,255,.8)");
-        glow.addColorStop(1, "rgba(100,160,255,0)");
-
-        ctx.fillStyle = glow;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, radius * 7, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#ffffff";
-        ctx.shadowColor = "#bceaff";
-        ctx.shadowBlur = 20 * pulse;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, radius * pulse, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();
-    });
-
-    /* Cinematic meteor: 2.8–5.3 seconds */
-
-    if (elapsed > 2800 && elapsed < 5300) {
-        const p = ease((elapsed - 2800) / 2500);
-
-        const x = width * 0.92 - width * 0.72 * p;
-        const y = height * 0.12 + height * 0.34 * p;
-
-        const tailLength = 145 * scale;
-
-        ctx.save();
-
-        const meteorGradient = ctx.createLinearGradient(
-            x, y,
-            x + tailLength,
-            y - tailLength * 0.55
-        );
-
-        meteorGradient.addColorStop(0, "rgba(255,255,255,1)");
-        meteorGradient.addColorStop(0.2, "rgba(160,220,255,.85)");
-        meteorGradient.addColorStop(1, "rgba(120,150,255,0)");
-
-        ctx.strokeStyle = meteorGradient;
-        ctx.lineWidth = 2.5;
-        ctx.shadowColor = "#a8dfff";
-        ctx.shadowBlur = 25;
-
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(
-            x + tailLength,
-            y - tailLength * 0.55
-        );
-        ctx.stroke();
-
-        ctx.fillStyle = "#ffffff";
-
-        ctx.beginPath();
-        ctx.arc(x, y, 3, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();
-    }
-
-    /* Taurus title */
-
-    const textProgress = ease((elapsed - 4700) / 900);
-
-    ctx.save();
-    ctx.globalAlpha = opacity * textProgress;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    ctx.shadowColor = "#9acfff";
-    ctx.shadowBlur = 25;
-
-    ctx.fillStyle = "rgba(235,245,255,.95)";
-    ctx.font = `${11 * scale}px Arial`;
-    ctx.fillText(
-        "HER CONSTELLATION",
-        cx,
-        cy + 115 * scale
-    );
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `${37 * scale}px Georgia, serif`;
-    ctx.fillText("♉", cx, cy + 151 * scale);
-
-    ctx.shadowBlur = 10;
-    ctx.fillStyle = "rgba(205,230,255,.95)";
-    ctx.font = `${13 * scale}px Georgia, serif`;
-    ctx.fillText("TAURUS", cx, cy + 184 * scale);
-
-    ctx.font = `${9 * scale}px Arial`;
-    ctx.fillStyle = "rgba(190,220,245,.8)";
-    ctx.fillText(
-        "MAY 03  ·  CHIAYI",
-        cx,
-        cy + 208 * scale
-    );
-
-    ctx.strokeStyle = "rgba(170,215,255,.55)";
-    ctx.lineWidth = 0.7;
-
-    ctx.beginPath();
-    ctx.moveTo(cx - 35 * scale, cy + 232 * scale);
-    ctx.lineTo(cx + 35 * scale, cy + 232 * scale);
-    ctx.stroke();
-
-    /* Romantic message */
-
-    const quoteProgress = ease((elapsed - 5500) / 900);
-
-    ctx.globalAlpha = opacity * quoteProgress;
-    ctx.shadowColor = "#a5dfff";
-    ctx.shadowBlur = 18;
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `${14 * scale}px "Songti SC", Georgia, serif`;
-
-    ctx.fillText(
-        "纵使星河万里，",
-        cx,
-        cy + 267 * scale
-    );
-
-    ctx.fillText(
-        "我的目光，始终为你停留。",
-        cx,
-        cy + 293 * scale
-    );
-
-    ctx.font = `${9 * scale}px Georgia, serif`;
-    ctx.fillStyle = "rgba(205,230,255,.8)";
-
-    ctx.fillText(
-        "— FROM XUANCE",
-        cx,
-        cy + 325 * scale
-    );
-
-    ctx.restore();
-    ctx.restore();
+function drawStarCoordinates(time){
+ if(!showStarCoordinates)return;
+
+ const elapsed=time-constellationStartedAt;
+ const duration=10000;
+ if(elapsed>=duration){showStarCoordinates=false;return;}
+
+ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const ease=v=>{v=clamp(v,0,1);return v*v*(3-2*v);};
+
+ const fadeIn=ease(elapsed/900);
+ const fadeOut=1-ease((elapsed-8300)/1700);
+ const opacity=fadeIn*fadeOut;
+
+ const scale=Math.min(width/390,height/780,1);
+ const cx=width/2;
+ const cy=height*.30;
+
+ ctx.save();
+ ctx.globalAlpha=opacity;
+
+ /* 3D Taurus points: x, y, z */
+ const points=[
+  [-105,-25,10],[-65,-75,0],[-15,-55,25],
+  [30,-90,-15],[75,-48,15],[105,5,-10],
+  [45,15,30],[-10,35,-20],[-65,10,15],
+  [5,-5,45],[115,-85,-35]
+ ];
+ const links=[[0,1],[1,2],[2,3],[2,4],[4,5],[4,6],[6,7],[7,8],[2,9],[3,10]];
+
+ const rotation=elapsed*.00025;
+ const tilt=Math.sin(elapsed*.0004)*.16;
+ const camera=520;
+
+ function project(point){
+  const [x,y,z]=point;
+  const rx=x*Math.cos(rotation)-z*Math.sin(rotation);
+  const rz=x*Math.sin(rotation)+z*Math.cos(rotation);
+  const ry=y*Math.cos(tilt)-rz*Math.sin(tilt);
+  const depth=y*Math.sin(tilt)+rz*Math.cos(tilt);
+  const perspective=camera/(camera+depth+130);
+  return {
+   x:cx+rx*perspective*scale,
+   y:cy+ry*perspective*scale,
+   size:perspective,
+   depth
+  };
+ }
+
+ const projected=points.map(project);
+
+ /* Soft cosmic atmosphere */
+ const atmosphere=ctx.createRadialGradient(cx,cy,5,cx,cy,210*scale);
+ atmosphere.addColorStop(0,"rgba(60,160,255,.16)");
+ atmosphere.addColorStop(.5,"rgba(80,100,255,.06)");
+ atmosphere.addColorStop(1,"rgba(0,0,0,0)");
+ ctx.fillStyle=atmosphere;
+ ctx.fillRect(cx-220*scale,cy-220*scale,440*scale,440*scale);
+
+ /* Dust particles gather around Taurus */
+ const gather=ease(elapsed/2200);
+ for(let i=0;i<260;i++){
+  const seed=i*12.9898;
+  const angle=seed%6.283;
+  const spread=35+(i*47%190);
+  const target=projected[i%projected.length];
+
+  const startX=cx+Math.cos(angle+time*.00012)*spread*scale;
+  const startY=cy+Math.sin(angle)*spread*.62*scale;
+
+  const drift=Math.sin(time*.001+i)*2.2*scale;
+  const px=startX+(target.x-startX)*gather+drift;
+  const py=startY+(target.y-startY)*gather+drift;
+
+  const twinkle=.35+.65*Math.abs(Math.sin(time*.002+i));
+  const size=(.45+(i%4)*.22)*scale;
+
+  ctx.beginPath();
+  ctx.arc(px,py,size,0,Math.PI*2);
+  ctx.fillStyle=`rgba(170,220,255,${twinkle*.65})`;
+  ctx.fill();
+ }
+
+ /* Constellation lines draw in sequence */
+ const lineProgress=ease(elapsed/2800);
+ links.forEach(([a,b],index)=>{
+  const reveal=clamp(lineProgress*links.length-index,0,1);
+  if(reveal<=0)return;
+
+  const p=projected[a],q=projected[b];
+  const x2=p.x+(q.x-p.x)*reveal;
+  const y2=p.y+(q.y-p.y)*reveal;
+
+  ctx.beginPath();
+  ctx.moveTo(p.x,p.y);
+  ctx.lineTo(x2,y2);
+  ctx.strokeStyle="rgba(180,225,255,.72)";
+  ctx.lineWidth=1.1*scale;
+  ctx.shadowColor="#8acbff";
+  ctx.shadowBlur=13;
+  ctx.stroke();
+ });
+
+ /* Glowing 3D stars */
+ projected.forEach((p,index)=>{
+  const appear=ease((elapsed-index*130)/650);
+  if(appear<=0)return;
+
+  const pulse=.8+Math.sin(time*.003+index)*.2;
+  const radius=(2.5+(index%3)*.6)*p.size*scale;
+
+  ctx.save();
+  ctx.globalAlpha=opacity*appear;
+
+  const glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,radius*8);
+  glow.addColorStop(0,"rgba(255,255,255,1)");
+  glow.addColorStop(.2,"rgba(160,220,255,.8)");
+  glow.addColorStop(1,"rgba(100,160,255,0)");
+
+  ctx.fillStyle=glow;
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,radius*8,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle="#fff";
+  ctx.shadowColor="#bceaff";
+  ctx.shadowBlur=20*pulse;
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,radius*pulse,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+ });
+
+ /* Meteor flies from upper right to lower left */
+ if(elapsed>2600&&elapsed<5400){
+  const p=ease((elapsed-2600)/2800);
+  const x=width*.94-width*.72*p;
+  const y=height*.10+height*.36*p;
+  const tail=155*scale;
+
+  ctx.save();
+  const meteor=ctx.createLinearGradient(x,y,x+tail,y-tail*.55);
+  meteor.addColorStop(0,"rgba(255,255,255,1)");
+  meteor.addColorStop(.25,"rgba(150,220,255,.8)");
+  meteor.addColorStop(1,"rgba(120,150,255,0)");
+
+  ctx.strokeStyle=meteor;
+  ctx.lineWidth=2.5;
+  ctx.shadowColor="#a8dfff";
+  ctx.shadowBlur=24;
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.lineTo(x+tail,y-tail*.55);
+  ctx.stroke();
+
+  /* Meteor particle trail */
+  for(let i=0;i<24;i++){
+   const t=i/24;
+   const px=x+tail*t;
+   const py=y-tail*.55*t;
+   const jitter=Math.sin(time*.02+i)*2;
+   ctx.beginPath();
+   ctx.arc(px+jitter,py+jitter,Math.max(.5,2*(1-t))*scale,0,Math.PI*2);
+   ctx.fillStyle=`rgba(180,225,255,${(1-t)*.65})`;
+   ctx.fill();
+  }
+
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.arc(x,y,3,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+ }
+
+ /* Taurus fades out with its particles */
+ ctx.save();
+ ctx.globalAlpha=opacity*ease((elapsed-3900)/500);
+ ctx.textAlign="center";
+ ctx.textBaseline="middle";
+ ctx.shadowColor="#9acfff";
+ ctx.shadowBlur=22;
+ ctx.fillStyle="#fff";
+ ctx.font=`${36*scale}px Georgia,serif`;
+ ctx.fillText("♉",cx,cy+145*scale);
+ ctx.restore();
+
+ ctx.restore();
 }
 
 /* ===================================
-   DRAW ORIGINAL AURORA
-   Aurora keeps flowing behind Taurus
+   AURORA BACKGROUND
 =================================== */
 
-function drawAurora(time) {
-    ctx.clearRect(0, 0, width, height);
+function drawAurora(time){
+ ctx.clearRect(0,0,width,height);
 
-    if (
-        showGraduationPhoto &&
-        graduationPhoto.complete &&
-        graduationPhoto.naturalWidth > 0
-    ) {
-        const imageRatio =
-            graduationPhoto.naturalWidth /
-            graduationPhoto.naturalHeight;
+ if(showGraduationPhoto&&graduationPhoto.complete&&graduationPhoto.naturalWidth>0){
+  const ir=graduationPhoto.naturalWidth/graduationPhoto.naturalHeight;
+  const sr=width/height;
+  let dw,dh,ox,oy;
 
-        const screenRatio = width / height;
+  if(ir>sr){dh=height;dw=height*ir;ox=(width-dw)/2;oy=0;}
+  else{dw=width;dh=width/ir;ox=0;oy=(height-dh)/2;}
 
-        let drawWidth, drawHeight, offsetX, offsetY;
+  ctx.drawImage(graduationPhoto,ox,oy,dw,dh);
+  ctx.fillStyle="rgba(2,7,18,.53)";
+  ctx.fillRect(0,0,width,height);
+ }else{
+  const bg=ctx.createLinearGradient(0,0,0,height);
+  bg.addColorStop(0,"#020611");
+  bg.addColorStop(.55,"#07152a");
+  bg.addColorStop(1,"#030712");
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,width,height);
+ }
 
-        if (imageRatio > screenRatio) {
-            drawHeight = height;
-            drawWidth = height * imageRatio;
-            offsetX = (width - drawWidth) / 2;
-            offsetY = 0;
-        } else {
-            drawWidth = width;
-            drawHeight = width / imageRatio;
-            offsetX = 0;
-            offsetY = (height - drawHeight) / 2;
-        }
+ ctx.save();
+ ctx.globalCompositeOperation="screen";
 
-        ctx.drawImage(
-            graduationPhoto,
-            offsetX,
-            offsetY,
-            drawWidth,
-            drawHeight
-        );
+ const colors=[[30,255,190],[30,180,255],[130,90,255],[40,255,220]];
 
-        ctx.fillStyle = "rgba(2,7,18,.53)";
-        ctx.fillRect(0, 0, width, height);
+ colors.forEach((color,index)=>{
+  const wave=ctx.createLinearGradient(0,height*.15,0,height*.8);
+  wave.addColorStop(0,"rgba(0,0,0,0)");
+  wave.addColorStop(.4,`rgba(${color.join(",")},.13)`);
+  wave.addColorStop(.7,`rgba(${color.join(",")},.025)`);
+  wave.addColorStop(1,"rgba(0,0,0,0)");
 
-    } else {
-        const bg = ctx.createLinearGradient(0, 0, 0, height);
+  ctx.fillStyle=wave;
+  ctx.beginPath();
+  ctx.moveTo(0,height*.3);
 
-        bg.addColorStop(0, "#020611");
-        bg.addColorStop(0.55, "#07152a");
-        bg.addColorStop(1, "#030712");
+  for(let x=0;x<=width;x+=5){
+   const y=height*.36+
+    Math.sin(x*.006+time*.0004+index)*55+
+    Math.sin(x*.002-time*.00025)*45;
+   ctx.lineTo(x,y+index*24);
+  }
 
-        ctx.fillStyle = bg;
-        ctx.fillRect(0, 0, width, height);
-    }
+  ctx.lineTo(width,height);
+  ctx.lineTo(0,height);
+  ctx.closePath();
+  ctx.fill();
+ });
 
-    ctx.save();
-    ctx.globalCompositeOperation = "screen";
-
-    const colors = [
-        [30,255,190],
-        [30,180,255],
-        [130,90,255],
-        [40,255,220]
-    ];
-
-    colors.forEach((color, index) => {
-        const wave = ctx.createLinearGradient(
-            0, height * 0.15,
-            0, height * 0.8
-        );
-
-        wave.addColorStop(0, "rgba(0,0,0,0)");
-
-        wave.addColorStop(
-            0.4,
-            `rgba(${color.join(",")},0.13)`
-        );
-
-        wave.addColorStop(
-            0.7,
-            `rgba(${color.join(",")},0.025)`
-        );
-
-        wave.addColorStop(1, "rgba(0,0,0,0)");
-
-        ctx.fillStyle = wave;
-        ctx.beginPath();
-        ctx.moveTo(0, height * 0.3);
-
-        for (let x = 0; x <= width; x += 5) {
-            const y =
-                height * 0.36 +
-                Math.sin(x * 0.006 + time * 0.0004 + index) * 55 +
-                Math.sin(x * 0.002 - time * 0.00025) * 45;
-
-            ctx.lineTo(x, y + index * 24);
-        }
-
-        ctx.lineTo(width, height);
-        ctx.lineTo(0, height);
-        ctx.closePath();
-        ctx.fill();
-    });
-
-    ctx.restore();
-
-    drawStars();
-
-    /* 3D Taurus appears above the original aurora */
-    drawStarCoordinates(time);
+ ctx.restore();
+ drawStars();
+ drawStarCoordinates(time);
 }
 
-function animate(time) {
-    drawAurora(time);
-    requestAnimationFrame(animate);
+function animate(time){
+ drawAurora(time);
+ requestAnimationFrame(animate);
 }
-
 requestAnimationFrame(animate);
 
+/* ===================================
+   GRADUATION COUNTDOWN
+   Target: 30 November 2027
+=================================== */
+
+function updateCountdown(){
+ const target=new Date(2027,10,30,0,0,0).getTime();
+ const now=Date.now();
+ let remaining=Math.max(0,target-now);
+
+ const day=Math.floor(remaining/86400000);
+ remaining%=86400000;
+ const hour=Math.floor(remaining/3600000);
+ remaining%=3600000;
+ const minute=Math.floor(remaining/60000);
+ remaining%=60000;
+ const second=Math.floor(remaining/1000);
+
+ document.getElementById("days").textContent=day;
+ document.getElementById("hours").textContent=String(hour).padStart(2,"0");
+ document.getElementById("minutes").textContent=String(minute).padStart(2,"0");
+ document.getElementById("seconds").textContent=String(second).padStart(2,"0");
+}
+updateCountdown();
+setInterval(updateCountdown,1000);
 
 /* ===================================
    ORIGINAL ENCRYPTED GRADUATION LETTER
-   salt, iv and ciphertext preserved
+   KEEP ORIGINAL SALT / IV / CIPHERTEXT
 =================================== */
 
-const secretGate = document.getElementById("secretGate");
-const secretPassword = document.getElementById("secretPassword");
-const secretUnlock = document.getElementById("secretUnlock");
-const secretError = document.getElementById("secretError");
-const secretMessage = document.getElementById("secretMessage");
-const decryptedText = document.getElementById("decryptedText");
-const bgMusic = document.getElementById("bgMusic");
+const secretGate=document.getElementById("secretGate");
+const secretPassword=document.getElementById("secretPassword");
+const secretUnlock=document.getElementById("secretUnlock");
+const secretError=document.getElementById("secretError");
+const secretMessage=document.getElementById("secretMessage");
+const decryptedText=document.getElementById("decryptedText");
+const bgMusic=document.getElementById("bgMusic");
+
+/*
+ IMPORTANT:
+ Keep the exact encryptedData object from your original index.html here.
+ Do not change its salt, iv, or ciphertext.
+*/
 
 const encryptedData = {
-    salt: "k1WOQVntrPYbU3maxr8Yrg==",
-    iv: "276FcYUxCIDRdVK4",
-    ciphertext: "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"
+ salt: "k1WOQVntrPYbU3maxr8Yrg==",
+ iv: "276FcYUxCIDRdVK4",
+ ciphertext: "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"
 };
 
 /* ===================================
-   BASE64 AND AES-GCM DECRYPTION
+   GRADUATION LETTER DECRYPTION
 =================================== */
 
-function base64ToBytes(value) {
-    const binary = atob(value);
-
-    return Uint8Array.from(
-        binary,
-        character => character.charCodeAt(0)
-    );
+function base64ToBytes(value){
+ const binary=atob(value);
+ return Uint8Array.from(binary,c=>c.charCodeAt(0));
 }
 
-async function deriveKey(password, salt) {
-    const encoder = new TextEncoder();
-
-    const material = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(password),
-        "PBKDF2",
-        false,
-        ["deriveKey"]
-    );
-
-    return crypto.subtle.deriveKey(
-        {
-            name: "PBKDF2",
-            salt,
-            iterations: 600000,
-            hash: "SHA-256"
-        },
-        material,
-        {
-            name: "AES-GCM",
-            length: 256
-        },
-        false,
-        ["decrypt"]
-    );
+async function deriveKey(password,salt){
+ const encoder=new TextEncoder();
+ const material=await crypto.subtle.importKey(
+  "raw",encoder.encode(password),"PBKDF2",false,["deriveKey"]
+ );
+ return crypto.subtle.deriveKey(
+  {name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},
+  material,{name:"AES-GCM",length:256},false,["decrypt"]
+ );
 }
 
-let messageTimer = null;
-let fadeTimer = null;
+let messageTimer=null;
+let fadeTimer=null;
 
-async function unlockSecret() {
-    secretError.textContent = "";
+async function unlockSecret(){
+ secretError.textContent="";
+ const password=secretPassword.value;
 
-    const password = secretPassword.value;
+ if(!password){secretError.textContent="Please enter the secret.";return;}
+ if(!window.crypto||!crypto.subtle){secretError.textContent="Secure connection required.";return;}
 
-    if (!password) {
-        secretError.textContent = "Please enter the secret.";
-        return;
-    }
+ secretUnlock.disabled=true;
 
-    if (!window.crypto || !window.crypto.subtle) {
-        secretError.textContent = "Secure connection required.";
-        return;
-    }
+ try{
+  const salt=base64ToBytes(encryptedData.salt);
+  const iv=base64ToBytes(encryptedData.iv);
+  const ciphertext=base64ToBytes(encryptedData.ciphertext);
+  const key=await deriveKey(password,salt);
 
-    secretUnlock.disabled = true;
+  const decrypted=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,ciphertext);
+  const message=new TextDecoder().decode(decrypted);
 
-    try {
-        const salt = base64ToBytes(encryptedData.salt);
-        const iv = base64ToBytes(encryptedData.iv);
-        const ciphertext = base64ToBytes(encryptedData.ciphertext);
+  secretGate.classList.remove("active");
+  secretPassword.value="";
+  decryptedText.textContent=message;
+  showGraduationPhoto=true;
 
-        const key = await deriveKey(password, salt);
+  bgMusic.volume=.35;
+  bgMusic.play().catch(()=>{});
 
-        const decrypted = await crypto.subtle.decrypt(
-            { name: "AES-GCM", iv },
-            key,
-            ciphertext
-        );
+  secretMessage.style.display="flex";
+  requestAnimationFrame(()=>secretMessage.classList.add("show"));
 
-        const message = new TextDecoder().decode(decrypted);
+  clearTimeout(messageTimer);
+  clearTimeout(fadeTimer);
 
-        secretGate.classList.remove("active");
-        secretPassword.value = "";
+  messageTimer=setTimeout(()=>{
+   secretMessage.classList.remove("show");
+   fadeTimer=setTimeout(()=>{
+    secretMessage.style.display="none";
+    decryptedText.textContent="";
+    showGraduationPhoto=false;
+    bgMusic.pause();
+    bgMusic.currentTime=0;
+   },3000);
+  },60000);
 
-        decryptedText.textContent = message;
-
-        showGraduationPhoto = true;
-
-        bgMusic.volume = 0.35;
-        bgMusic.play().catch(() => {
-            console.log("Music playback was blocked by the browser.");
-        });
-
-        secretMessage.style.display = "flex";
-
-        requestAnimationFrame(() => {
-            secretMessage.classList.add("show");
-        });
-
-        clearTimeout(messageTimer);
-        clearTimeout(fadeTimer);
-
-        messageTimer = setTimeout(() => {
-            secretMessage.classList.remove("show");
-
-            fadeTimer = setTimeout(() => {
-                secretMessage.style.display = "none";
-                decryptedText.textContent = "";
-                showGraduationPhoto = false;
-
-                bgMusic.pause();
-                bgMusic.currentTime = 0;
-            }, 3000);
-
-        }, 60000);
-
-    } catch (error) {
-        console.error("Decryption error:", error);
-
-        secretError.textContent = "The stars remain silent.";
-        secretPassword.value = "";
-
-    } finally {
-        secretUnlock.disabled = false;
-    }
+ }catch(error){
+  console.error(error);
+  secretError.textContent="The stars remain silent.";
+  secretPassword.value="";
+ }finally{
+  secretUnlock.disabled=false;
+ }
 }
 
-/* ===================================
-   PASSWORD GATE
-=================================== */
+secretUnlock.addEventListener("click",unlockSecret);
+secretPassword.addEventListener("keydown",e=>{if(e.key==="Enter")unlockSecret();});
 
-secretUnlock.addEventListener("click", unlockSecret);
-
-secretPassword.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        unlockSecret();
-    }
+document.getElementById("secretClose").addEventListener("click",()=>{
+ secretGate.classList.remove("active");
+ secretPassword.value="";
+ secretError.textContent="";
 });
 
-document.getElementById("secretClose").addEventListener("click", () => {
-    secretGate.classList.remove("active");
-    secretPassword.value = "";
-    secretError.textContent = "";
+/* ===================================
+   SECRET WISHES — ENCRYPTED LOCAL VAULT
+   AES-GCM + PBKDF2 + IndexedDB
+=================================== */
+
+const wishPanel=document.getElementById("wishPanel");
+const wishPassword=document.getElementById("wishPassword");
+const wishText=document.getElementById("wishText");
+const wishStatus=document.getElementById("wishStatus");
+const wishList=document.getElementById("wishList");
+
+let wishDB=null;
+let wishKey=null;
+let wishVaultReady=false;
+
+function openWishDB(){
+ return new Promise((resolve,reject)=>{
+  const request=indexedDB.open("ChiayiSecretWishes",1);
+
+  request.onupgradeneeded=()=>{
+   const db=request.result;
+   if(!db.objectStoreNames.contains("items")){
+    db.createObjectStore("items",{keyPath:"id"});
+   }
+  };
+
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error);
+ });
+}
+
+function wishTransaction(mode,operation){
+ return new Promise((resolve,reject)=>{
+  const tx=wishDB.transaction("items",mode);
+  const store=tx.objectStore("items");
+  let request;
+
+  try{request=operation(store);}catch(error){reject(error);return;}
+
+  tx.oncomplete=()=>resolve(request?request.result:undefined);
+  tx.onerror=()=>reject(tx.error);
+  tx.onabort=()=>reject(tx.error);
+ });
+}
+
+async function wishGetAll(){
+ return wishTransaction("readonly",store=>store.getAll());
+}
+
+async function wishPut(record){
+ return wishTransaction("readwrite",store=>store.put(record));
+}
+
+async function wishDelete(id){
+ return wishTransaction("readwrite",store=>store.delete(id));
+}
+
+function randomBytes(length){
+ return crypto.getRandomValues(new Uint8Array(length));
+}
+
+function bytesToBase64(bytes){
+ let binary="";
+ bytes.forEach(b=>binary+=String.fromCharCode(b));
+ return btoa(binary);
+}
+
+async function deriveWishKey(password,salt){
+ const material=await crypto.subtle.importKey(
+  "raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveKey"]
+ );
+
+ return crypto.subtle.deriveKey(
+  {name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},
+  material,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]
+ );
+}
+
+async function encryptWish(text,key){
+ const iv=randomBytes(12);
+ const data=new TextEncoder().encode(text);
+
+ const encrypted=await crypto.subtle.encrypt(
+  {name:"AES-GCM",iv},key,data
+ );
+
+ return {iv:bytesToBase64(iv),ciphertext:bytesToBase64(new Uint8Array(encrypted))};
+}
+
+async function decryptWish(record,key){
+ const iv=base64ToBytes(record.iv);
+ const data=base64ToBytes(record.ciphertext);
+
+ const decrypted=await crypto.subtle.decrypt(
+  {name:"AES-GCM",iv},key,data
+ );
+
+ return new TextDecoder().decode(decrypted);
+}
+
+async function openWishes(){
+ wishPanel.classList.add("active");
+ wishStatus.textContent="请输入愿望密码。";
+ wishPassword.value="";
+ wishText.value="";
+ wishList.innerHTML="";
+ wishKey=null;
+ wishVaultReady=false;
+ wishPassword.focus();
+
+ try{
+  if(!wishDB)wishDB=await openWishDB();
+
+  const records=await wishGetAll();
+  const vault=records.find(r=>r.id==="__vault__");
+
+  if(vault){
+   wishStatus.textContent="请输入你的愿望密码以解锁。";
+  }else{
+   wishStatus.textContent="第一次使用？请设置一个只有你知道的愿望密码。";
+  }
+ }catch(error){
+  console.error(error);
+  wishStatus.textContent="当前浏览器无法打开本地愿望储存。";
+ }
+}
+
+async function unlockWishVault(){
+ const password=wishPassword.value;
+
+ if(!password||password.length<6){
+  wishStatus.textContent="请设置至少 6 个字符的愿望密码。";
+  return false;
+ }
+
+ if(!crypto.subtle){
+  wishStatus.textContent="需要 HTTPS 安全连接才能加密。";
+  return false;
+ }
+
+ const records=await wishGetAll();
+ const vault=records.find(r=>r.id==="__vault__");
+
+ if(!vault){
+  const salt=randomBytes(16);
+  const key=await deriveWishKey(password,salt);
+  const encrypted=await encryptWish("CHIAYI_SECRET_WISH_VAULT_V1",key);
+
+  await wishPut({
+   id:"__vault__",
+   salt:bytesToBase64(salt),
+   iv:encrypted.iv,
+   ciphertext:encrypted.ciphertext
+  });
+
+  wishKey=key;
+  wishVaultReady=true;
+  wishStatus.textContent="愿望保险箱已创建。现在可以写下愿望。";
+  await renderWishes();
+  return true;
+ }
+
+ try{
+  const salt=base64ToBytes(vault.salt);
+  const key=await deriveWishKey(password,salt);
+  const check=await decryptWish(vault,key);
+
+  if(check!=="CHIAYI_SECRET_WISH_VAULT_V1")throw new Error("Wrong password");
+
+  wishKey=key;
+  wishVaultReady=true;
+  wishStatus.textContent="愿望保险箱已解锁。";
+  await renderWishes();
+  return true;
+
+ }catch(error){
+  wishKey=null;
+  wishVaultReady=false;
+  wishStatus.textContent="密码不正确，无法解锁愿望。";
+  return false;
+ }
+}
+
+async function renderWishes(){
+ wishList.innerHTML="";
+ const records=await wishGetAll();
+ const wishes=records.filter(r=>r.id!=="__vault__");
+
+ if(!wishes.length){
+  wishList.textContent="这里还没有愿望。";
+  return;
+ }
+
+ for(const record of wishes){
+  const item=document.createElement("div");
+  item.className="wish-item";
+
+  const text=document.createElement("div");
+  text.className="wish-item-text";
+
+  try{
+   text.textContent=await decryptWish(record,wishKey);
+  }catch(error){
+   text.textContent="无法读取这条愿望。";
+  }
+
+  const del=document.createElement("button");
+  del.className="wish-delete";
+  del.textContent="删除这条愿望";
+  del.addEventListener("click",async()=>{
+   if(!confirm("确定删除这条愿望吗？"))return;
+   await wishDelete(record.id);
+   await renderWishes();
+   wishStatus.textContent="愿望已删除。";
+  });
+
+  item.appendChild(text);
+  item.appendChild(del);
+  wishList.appendChild(item);
+ }
+}
+
+document.getElementById("openWishes").addEventListener("click",openWishes);
+
+document.getElementById("saveWish").addEventListener("click",async()=>{
+ try{
+  if(!wishDB)wishDB=await openWishDB();
+
+  if(!wishVaultReady){
+   const unlocked=await unlockWishVault();
+   if(!unlocked)return;
+  }
+
+  const text=wishText.value.trim();
+  if(!text){
+   wishStatus.textContent="先写下一个愿望吧。";
+   return;
+  }
+
+  const encrypted=await encryptWish(text,wishKey);
+
+  await wishPut({
+   id:crypto.randomUUID(),
+   iv:encrypted.iv,
+   ciphertext:encrypted.ciphertext,
+   createdAt:Date.now()
+  });
+
+  wishText.value="";
+  wishStatus.textContent="✦ 愿望已经加密，交给星河保管。";
+  await renderWishes();
+
+ }catch(error){
+  console.error(error);
+  wishStatus.textContent="保存失败，请检查浏览器是否支持安全加密。";
+ }
+});
+
+wishPassword.addEventListener("keydown",async e=>{
+ if(e.key==="Enter"){
+  e.preventDefault();
+  try{
+   if(!wishDB)wishDB=await openWishDB();
+   await unlockWishVault();
+  }catch(error){
+   wishStatus.textContent="无法打开本地愿望保险箱。";
+  }
+ }
+});
+
+document.getElementById("wishClose").addEventListener("click",()=>{
+ wishPanel.classList.remove("active");
+ wishKey=null;
+ wishVaultReady=false;
+ wishPassword.value="";
+ wishText.value="";
+ wishList.innerHTML="";
+ wishStatus.textContent="";
 });
 
 /* ===================================
    HIDDEN FIVE-TAP PASSWORD ENTRANCE
-   TOP RIGHT CORNER
 =================================== */
 
-let tapCount = 0;
-let lastTap = 0;
-let tapTimer = null;
+let tapCount=0,lastTap=0,tapTimer=null;
 
-window.addEventListener("pointerdown", event => {
-    if (
-        secretGate.classList.contains("active") ||
-        secretMessage.classList.contains("show")
-    ) {
-        return;
-    }
+window.addEventListener("pointerdown",event=>{
+ if(
+  secretGate.classList.contains("active")||
+  secretMessage.classList.contains("show")||
+  wishPanel.classList.contains("active")
+ )return;
 
-    const now = Date.now();
+ const now=Date.now();
+ const inSecretArea=event.clientX>width*.82&&event.clientY<height*.18;
 
-    const inSecretArea =
-        event.clientX > width * 0.82 &&
-        event.clientY < height * 0.18;
+ if(!inSecretArea){tapCount=0;return;}
+ if(now-lastTap>2500)tapCount=0;
 
-    if (!inSecretArea) {
-        tapCount = 0;
-        return;
-    }
+ lastTap=now;
+ tapCount++;
+ clearTimeout(tapTimer);
+ tapTimer=setTimeout(()=>tapCount=0,2500);
 
-    if (now - lastTap > 2500) {
-        tapCount = 0;
-    }
-
-    lastTap = now;
-    tapCount++;
-
-    clearTimeout(tapTimer);
-
-    tapTimer = setTimeout(() => {
-        tapCount = 0;
-    }, 2500);
-
-    if (tapCount >= 5) {
-        tapCount = 0;
-        secretGate.classList.add("active");
-        secretPassword.focus();
-    }
+ if(tapCount>=5){
+  tapCount=0;
+  secretGate.classList.add("active");
+  secretPassword.focus();
+ }
 });
 
 /* ===================================
-   HIDDEN TAURUS CONSTELLATION
+   HIDDEN TAURUS TRIGGER
    BOTTOM LEFT CORNER
 =================================== */
 
-window.addEventListener("pointerdown", event => {
-    if (
-        secretGate.classList.contains("active") ||
-        secretMessage.classList.contains("show")
-    ) {
-        return;
-    }
+window.addEventListener("pointerdown",event=>{
+ if(
+  secretGate.classList.contains("active")||
+  secretMessage.classList.contains("show")||
+  wishPanel.classList.contains("active")
+ )return;
 
-    const hiddenStarArea =
-        event.clientX < width * 0.18 &&
-        event.clientY > height * 0.82;
+ const hiddenStarArea=
+  event.clientX<width*.18&&event.clientY>height*.82;
 
-    if (hiddenStarArea) {
-        showStarCoordinates = true;
-        constellationStartedAt = performance.now();
-    }
+ if(hiddenStarArea){
+  showStarCoordinates=true;
+  constellationStartedAt=performance.now();
+ }
 });
-
 </script>
 </body>
 </html>
