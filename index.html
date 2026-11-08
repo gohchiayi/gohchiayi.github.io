@@ -247,7 +247,6 @@ canvas {
 
 <canvas id="sky"></canvas>
 
-<!-- Background music -->
 <audio id="bgMusic" src="audio/graduation.mp3" preload="auto" loop></audio>
 
 <div class="content">
@@ -256,8 +255,6 @@ canvas {
     <div class="line"></div>
     <div class="footer">FOREVER UNDER THE SAME SKY</div>
 </div>
-
-<!-- Password interface -->
 
 <div id="secretGate">
     <div class="secret-card">
@@ -278,25 +275,13 @@ canvas {
     </div>
 </div>
 
-<!-- Graduation letter -->
-
 <div id="secretMessage">
     <div class="letter">
-
         <div class="letter-title">致青春，致未来</div>
-
-        <div class="letter-subtitle">
-            献给吴嘉怡
-        </div>
-
+        <div class="letter-subtitle">献给吴嘉怡</div>
         <div class="letter-divider"></div>
-
         <div class="letter-body" id="decryptedText"></div>
-
-        <div class="letter-signature">
-            —— 傅玄策
-        </div>
-
+        <div class="letter-signature">—— 傅玄策</div>
     </div>
 </div>
 
@@ -312,7 +297,6 @@ const ctx = canvas.getContext("2d");
 let width, height, stars = [];
 let showGraduationPhoto = false;
 
-/* Taurus constellation animation state */
 let showStarCoordinates = false;
 let constellationStartedAt = 0;
 
@@ -356,7 +340,7 @@ function drawStars() {
 }
 
 /* ===================================
-   TAURUS CONSTELLATION — 10 SECONDS
+   CINEMATIC 3D TAURUS — 10 SECONDS
 =================================== */
 
 function drawStarCoordinates(time) {
@@ -370,232 +354,267 @@ function drawStarCoordinates(time) {
         return;
     }
 
-    const scale = Math.max(
-        0.72,
-        Math.min(width / 390, height / 750, 1)
-    );
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const ease = v => {
+        v = clamp(v, 0, 1);
+        return v * v * (3 - 2 * v);
+    };
 
-    const points = [
-        [-95, -65],
-        [-45, -105],
-        [15, -82],
-        [78, -110],
-        [105, -38],
-        [55, 15],
-        [-15, 35],
-        [-80, 5]
+    const fadeIn = ease(elapsed / 1000);
+    const fadeOut = 1 - ease((elapsed - 8200) / 1800);
+    const opacity = fadeIn * fadeOut;
+
+    const scale = Math.min(width / 390, height / 700, 1);
+    const cx = width / 2;
+    const cy = height * 0.39;
+
+    ctx.save();
+    ctx.globalAlpha = opacity;
+
+    const stars3D = [
+        [-105, -25, 10],
+        [-65, -75, 0],
+        [-15, -55, 25],
+        [30, -90, -15],
+        [75, -48, 15],
+        [105, 5, -10],
+        [45, 15, 30],
+        [-10, 35, -20],
+        [-65, 10, 15],
+        [5, -5, 45],
+        [115, -85, -35]
     ];
 
-    const clamp = (value, min, max) =>
-        Math.max(min, Math.min(max, value));
+    const connections = [
+        [0,1], [1,2], [2,3],
+        [2,4], [4,5], [4,6],
+        [6,7], [7,8], [2,9],
+        [3,10]
+    ];
 
-    /* Overall fade in and fade out */
+    const rotation = elapsed * 0.00022;
+    const tilt = Math.sin(elapsed * 0.0004) * 0.12;
+    const camera = 520;
 
-    let overallOpacity = 1;
+    function project(point) {
+        const [x, y, z] = point;
 
-    if (elapsed < 800) {
-        overallOpacity = elapsed / 800;
-    } else if (elapsed > 8000) {
-        overallOpacity = (10000 - elapsed) / 2000;
+        const rx = x * Math.cos(rotation) - z * Math.sin(rotation);
+        const rz = x * Math.sin(rotation) + z * Math.cos(rotation);
+
+        const ry = y * Math.cos(tilt) - rz * Math.sin(tilt);
+        const depth = y * Math.sin(tilt) + rz * Math.cos(tilt);
+
+        const perspective = camera / (camera + depth + 130);
+
+        return {
+            x: cx + rx * perspective * scale,
+            y: cy + ry * perspective * scale,
+            size: perspective,
+            depth
+        };
     }
 
-    ctx.save();
-    ctx.globalAlpha = clamp(overallOpacity, 0, 1);
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    const projected = stars3D.map(project);
 
-    /* 1. Constellation appears: 0–3 seconds */
+    /* Atmospheric glow */
 
-    const chartProgress = clamp(elapsed / 3000, 0, 1);
+    const atmosphere = ctx.createRadialGradient(
+        cx, cy, 5,
+        cx, cy, 190 * scale
+    );
 
-    ctx.save();
-    ctx.translate(centerX, centerY - 75 * scale);
-    ctx.scale(scale, scale);
+    atmosphere.addColorStop(0, "rgba(60,160,255,.13)");
+    atmosphere.addColorStop(0.5, "rgba(80,100,255,.055)");
+    atmosphere.addColorStop(1, "rgba(0,0,0,0)");
 
-    const visibleSegments =
-        chartProgress * (points.length - 1);
+    ctx.fillStyle = atmosphere;
+    ctx.fillRect(
+        cx - 200 * scale,
+        cy - 200 * scale,
+        400 * scale,
+        400 * scale
+    );
 
-    ctx.beginPath();
-    ctx.moveTo(points[0][0], points[0][1]);
+    /* Floating cosmic particles */
 
-    for (let i = 0; i < points.length - 1; i++) {
-        if (visibleSegments >= i + 1) {
-            ctx.lineTo(
-                points[i + 1][0],
-                points[i + 1][1]
-            );
-        } else if (visibleSegments > i) {
-            const progress = visibleSegments - i;
+    for (let i = 0; i < 65; i++) {
+        const angle = i * 2.399;
+        const distance = 75 + (i * 37 % 160);
 
-            ctx.lineTo(
-                points[i][0] +
-                (points[i + 1][0] - points[i][0]) * progress,
-
-                points[i][1] +
-                (points[i + 1][1] - points[i][1]) * progress
-            );
-
-            break;
-        } else {
-            break;
-        }
-    }
-
-    ctx.strokeStyle = "rgba(180,235,255,.85)";
-    ctx.lineWidth = 1.2;
-    ctx.shadowColor = "#8affdf";
-    ctx.shadowBlur = 14;
-    ctx.stroke();
-
-    /* Stars light up one by one */
-
-    points.forEach((point, index) => {
-        const appear = clamp(
-            chartProgress * points.length - index,
-            0,
-            1
-        );
-
-        if (appear <= 0) return;
-
-        const glow =
-            2.5 + Math.sin(time * 0.005 + index) * 1.2;
-
-        ctx.globalAlpha = overallOpacity * appear;
+        const px = cx + Math.cos(angle + time * 0.0001) * distance * scale;
+        const py = cy + Math.sin(angle) * distance * 0.55 * scale;
 
         ctx.beginPath();
-        ctx.arc(point[0], point[1], glow, 0, Math.PI * 2);
-        ctx.fillStyle = "#eaffff";
-        ctx.shadowColor = "#8affdf";
-        ctx.shadowBlur = 20;
+        ctx.arc(px, py, (i % 3 + 0.5) * scale, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(180,220,255,${0.18 + (i % 4) * 0.08})`;
         ctx.fill();
-    });
+    }
 
-    ctx.restore();
+    /* 3D constellation lines */
 
-    /* 2. Meteor flies across: 3–5 seconds */
+    const progress = ease(elapsed / 3000);
 
-    if (elapsed >= 3000 && elapsed <= 5000) {
-        const progress = clamp(
-            (elapsed - 3000) / 2000,
-            0,
-            1
-        );
+    connections.forEach(([a, b], index) => {
+        const start = projected[a];
+        const end = projected[b];
 
-        const startX = width * 0.85;
-        const startY = height * 0.20;
-        const endX = width * 0.25;
-        const endY = height * 0.48;
+        const reveal = clamp(progress * connections.length - index, 0, 1);
+        if (reveal <= 0) return;
 
-        const x = startX + (endX - startX) * progress;
-        const y = startY + (endY - startY) * progress;
-
-        const tail = 100 * scale;
+        const x2 = start.x + (end.x - start.x) * reveal;
+        const y2 = start.y + (end.y - start.y) * reveal;
 
         const gradient = ctx.createLinearGradient(
-            x, y,
-            x + tail, y - tail * 0.48
+            start.x, start.y, x2, y2
         );
 
-        gradient.addColorStop(0, "rgba(255,255,255,1)");
-        gradient.addColorStop(0.3, "rgba(160,240,255,.7)");
-        gradient.addColorStop(1, "rgba(160,240,255,0)");
+        gradient.addColorStop(0, "rgba(120,190,255,.12)");
+        gradient.addColorStop(0.5, "rgba(205,235,255,.9)");
+        gradient.addColorStop(1, "rgba(110,210,255,.3)");
+
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(x2, y2);
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1.15 * scale;
+        ctx.shadowColor = "#8acbff";
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+    });
+
+    /* Glowing stars */
+
+    projected.forEach((p, index) => {
+        const appear = ease((elapsed - index * 170) / 650);
+        if (appear <= 0) return;
+
+        const pulse = 0.8 + Math.sin(time * 0.003 + index) * 0.2;
+        const radius = (2.2 + (index % 3) * 0.7) * p.size * scale;
+
+        ctx.save();
+        ctx.globalAlpha = opacity * appear;
+
+        const glow = ctx.createRadialGradient(
+            p.x, p.y, 0,
+            p.x, p.y, radius * 7
+        );
+
+        glow.addColorStop(0, "rgba(255,255,255,1)");
+        glow.addColorStop(0.2, "rgba(160,220,255,.8)");
+        glow.addColorStop(1, "rgba(100,160,255,0)");
+
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius * 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = "#bceaff";
+        ctx.shadowBlur = 20 * pulse;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius * pulse, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    });
+
+    /* Cinematic meteor */
+
+    if (elapsed > 2800 && elapsed < 5300) {
+        const p = ease((elapsed - 2800) / 2500);
+
+        const x = width * 0.92 - width * 0.72 * p;
+        const y = height * 0.12 + height * 0.34 * p;
+
+        const tailLength = 145 * scale;
 
         ctx.save();
 
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = "#b9faff";
-        ctx.shadowBlur = 18;
+        const meteorGradient = ctx.createLinearGradient(
+            x, y,
+            x + tailLength, y - tailLength * 0.55
+        );
+
+        meteorGradient.addColorStop(0, "rgba(255,255,255,1)");
+        meteorGradient.addColorStop(0.2, "rgba(160,220,255,.85)");
+        meteorGradient.addColorStop(1, "rgba(120,150,255,0)");
+
+        ctx.strokeStyle = meteorGradient;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = "#a8dfff";
+        ctx.shadowBlur = 25;
 
         ctx.beginPath();
         ctx.moveTo(x, y);
-        ctx.lineTo(x + tail, y - tail * 0.48);
+        ctx.lineTo(x + tailLength, y - tailLength * 0.55);
         ctx.stroke();
 
-        ctx.beginPath();
-        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
         ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
     }
 
-    /* 3. Taurus information appears */
+    /* Cinematic typography */
 
-    const infoOpacity = clamp(
-        (elapsed - 4800) / 700,
-        0,
-        1
-    );
+    const textProgress = ease((elapsed - 4700) / 900);
 
     ctx.save();
-    ctx.globalAlpha = overallOpacity * infoOpacity;
+    ctx.globalAlpha = opacity * textProgress;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
-    ctx.fillStyle = "#eafff8";
-    ctx.shadowColor = "#8affdf";
-    ctx.shadowBlur = 18;
+    ctx.shadowColor = "#9acfff";
+    ctx.shadowBlur = 25;
 
-    ctx.font = `${30 * scale}px Georgia, serif`;
-    ctx.fillText("♉", centerX, centerY + 15 * scale);
+    ctx.fillStyle = "rgba(235,245,255,.95)";
+    ctx.font = `${11 * scale}px Arial`;
+    ctx.fillText("HER CONSTELLATION", cx, cy + 115 * scale);
 
-    ctx.font = `${10 * scale}px Arial`;
-    ctx.fillStyle = "rgba(220,245,255,.9)";
-    ctx.fillText(
-        "HER STAR COORDINATES",
-        centerX,
-        centerY + 55 * scale
-    );
-
-    ctx.font = `${17 * scale}px Georgia, serif`;
     ctx.fillStyle = "#ffffff";
-    ctx.fillText(
-        "MAY 03",
-        centerX,
-        centerY + 82 * scale
-    );
+    ctx.font = `${37 * scale}px Georgia, serif`;
+    ctx.fillText("♉", cx, cy + 151 * scale);
 
-    ctx.font = `${10 * scale}px Arial`;
-    ctx.fillStyle = "rgba(200,245,240,.85)";
-    ctx.fillText(
-        "CHIAYI-001",
-        centerX,
-        centerY + 105 * scale
-    );
+    ctx.shadowBlur = 10;
+    ctx.fillStyle = "rgba(205,230,255,.95)";
+    ctx.font = `${13 * scale}px Georgia, serif`;
+    ctx.fillText("TAURUS", cx, cy + 184 * scale);
 
-    ctx.restore();
+    ctx.font = `${9 * scale}px Arial`;
+    ctx.fillStyle = "rgba(190,220,245,.8)";
+    ctx.fillText("MAY 03  ·  CHIAYI", cx, cy + 208 * scale);
 
-    /* 4. Romantic message appears: 5–8 seconds */
+    ctx.strokeStyle = "rgba(170,215,255,.55)";
+    ctx.lineWidth = 0.7;
 
-    const quoteOpacity = clamp(
-        (elapsed - 5000) / 1000,
-        0,
-        1
-    );
+    ctx.beginPath();
+    ctx.moveTo(cx - 35 * scale, cy + 232 * scale);
+    ctx.lineTo(cx + 35 * scale, cy + 232 * scale);
+    ctx.stroke();
 
-    ctx.save();
-    ctx.globalAlpha = overallOpacity * quoteOpacity;
+    /* Romantic message */
 
-    ctx.fillStyle = "rgba(245,255,255,.98)";
-    ctx.shadowColor = "#8affdf";
+    const quoteProgress = ease((elapsed - 5500) / 900);
+
+    ctx.globalAlpha = opacity * quoteProgress;
+    ctx.shadowColor = "#a5dfff";
     ctx.shadowBlur = 18;
 
-    ctx.font = `${14 * scale}px Georgia, "Songti SC", serif`;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `${14 * scale}px "Songti SC", Georgia, serif`;
 
-    ctx.fillText(
-        "纵使星河万里，",
-        centerX,
-        centerY + 158 * scale
-    );
+    ctx.fillText("纵使星河万里，", cx, cy + 267 * scale);
+    ctx.fillText("我的目光，始终为你停留。", cx, cy + 293 * scale);
 
-    ctx.fillText(
-        "我的目光，始终为你停留。",
-        centerX,
-        centerY + 184 * scale
-    );
+    ctx.font = `${9 * scale}px Georgia, serif`;
+    ctx.fillStyle = "rgba(205,230,255,.8)";
+    ctx.fillText("— FROM XUANCE", cx, cy + 325 * scale);
 
     ctx.restore();
     ctx.restore();
@@ -706,8 +725,6 @@ function drawAurora(time) {
     ctx.restore();
 
     drawStars();
-
-    /* Draw Taurus constellation above the aurora and stars */
     drawStarCoordinates(time);
 }
 
@@ -720,140 +737,179 @@ requestAnimationFrame(animate);
 
 
 /* ===================================
-   ENCRYPTED GRADUATION MESSAGE
+   ENCRYPTED GRADUATION LETTER
 =================================== */
 
-const secretGate = document.getElementById("secretGate");
-const secretPassword = document.getElementById("secretPassword");
-const secretUnlock = document.getElementById("secretUnlock");
-const secretError = document.getElementById("secretError");
-const secretMessage = document.getElementById("secretMessage");
-const decryptedText = document.getElementById("decryptedText");
-
-// Background music element
-const bgMusic = document.getElementById("bgMusic");
+/*
+IMPORTANT:
+把你原本 HTML 里面完整的 encryptedData 密文复制过来。
+不要修改 salt、iv 或 ciphertext。
+*/
 
 const encryptedData = {
     salt: "k1WOQVntrPYbU3maxr8Yrg==",
     iv: "276FcYUxCIDRdVK4",
-    ciphertext: "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"
+    ciphertext: "在这里粘贴你原本完整的 ciphertext"
 };
 
-function base64ToBytes(value) {
-    const binary = atob(value);
+const secretGate = document.getElementById("secretGate");
+const secretPassword = document.getElementById("secretPassword");
+const secretUnlock = document.getElementById("secretUnlock");
+const secretClose = document.getElementById("secretClose");
+const secretError = document.getElementById("secretError");
 
-    return Uint8Array.from(
-        binary,
-        character => character.charCodeAt(0)
-    );
+const secretMessage = document.getElementById("secretMessage");
+const decryptedText = document.getElementById("decryptedText");
+const bgMusic = document.getElementById("bgMusic");
+
+let secretTapCount = 0;
+let secretTapTimer = null;
+let letterCloseTimer = null;
+
+/* ===================================
+   BASE64 HELPER
+=================================== */
+
+function base64ToBytes(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+
+    return bytes;
 }
 
-async function deriveKey(password, salt) {
-    const encoder = new TextEncoder();
-
-    const material = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(password),
-        "PBKDF2",
-        false,
-        ["deriveKey"]
-    );
-
-    return crypto.subtle.deriveKey(
-        {
-            name: "PBKDF2",
-            salt,
-            iterations: 600000,
-            hash: "SHA-256"
-        },
-        material,
-        {
-            name: "AES-GCM",
-            length: 256
-        },
-        false,
-        ["decrypt"]
-    );
-}
-
-let messageTimer = null;
-let fadeTimer = null;
+/* ===================================
+   AES-GCM DECRYPTION
+=================================== */
 
 async function unlockSecret() {
-    secretError.textContent = "";
-
     const password = secretPassword.value;
 
-    if (!password) {
-        secretError.textContent = "Please enter the secret.";
+    if (password !== "5+1") {
+        secretError.textContent = "密码不正确，再试试看。";
+        secretPassword.value = "";
         return;
     }
 
-    if (!window.crypto || !window.crypto.subtle) {
-        secretError.textContent = "Secure connection required.";
+    if (
+        !encryptedData.ciphertext ||
+        encryptedData.ciphertext.includes("在这里粘贴")
+    ) {
+        secretError.textContent = "还没有放入原本的加密信件。";
         return;
     }
 
     secretUnlock.disabled = true;
+    secretUnlock.textContent = "UNLOCKING...";
 
     try {
-        const salt = base64ToBytes(encryptedData.salt);
-        const iv = base64ToBytes(encryptedData.iv);
-        const ciphertext = base64ToBytes(encryptedData.ciphertext);
+        const encoder = new TextEncoder();
 
-        const key = await deriveKey(password, salt);
-
-        const decrypted = await crypto.subtle.decrypt(
-            { name: "AES-GCM", iv },
-            key,
-            ciphertext
+        const keyMaterial = await crypto.subtle.importKey(
+            "raw",
+            encoder.encode(password),
+            "PBKDF2",
+            false,
+            ["deriveKey"]
         );
 
-        const message = new TextDecoder().decode(decrypted);
+        const key = await crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: base64ToBytes(encryptedData.salt),
+                iterations: 600000,
+                hash: "SHA-256"
+            },
+            keyMaterial,
+            {
+                name: "AES-GCM",
+                length: 256
+            },
+            false,
+            ["decrypt"]
+        );
 
-        secretGate.classList.remove("active");
-        secretPassword.value = "";
+        const decryptedBuffer = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: base64ToBytes(encryptedData.iv)
+            },
+            key,
+            base64ToBytes(encryptedData.ciphertext)
+        );
+
+        const message = new TextDecoder().decode(decryptedBuffer);
 
         decryptedText.textContent = message;
 
-        // Show Chiayi's photo behind the running aurora
-        showGraduationPhoto = true;
-
-        // Play graduation background music
-        bgMusic.volume = 0.35;
-        bgMusic.play().catch(() => {
-            console.log("Music playback was blocked by the browser.");
-        });
-
+        secretGate.classList.remove("active");
         secretMessage.style.display = "flex";
 
         requestAnimationFrame(() => {
             secretMessage.classList.add("show");
         });
 
-        clearTimeout(messageTimer);
-        clearTimeout(fadeTimer);
+        showGraduationPhoto = true;
 
-        // Give enough time to read the full graduation letter
-        messageTimer = setTimeout(() => {
-            secretMessage.classList.remove("show");
+        bgMusic.volume = 0.35;
+        bgMusic.currentTime = 0;
+        bgMusic.play().catch(() => {});
 
-            fadeTimer = setTimeout(() => {
-                secretMessage.style.display = "none";
-                decryptedText.textContent = "";
+        clearTimeout(letterCloseTimer);
 
-                // Restore the original aurora background
-                showGraduationPhoto = false;
-            }, 3000);
-
+        letterCloseTimer = setTimeout(() => {
+            closeSecretMessage();
         }, 60000);
 
     } catch (error) {
-        secretError.textContent = "The stars remain silent.";
+        console.error("Decryption error:", error);
+
+        secretError.textContent =
+            "无法解锁信件，请检查密码和原本的密文。";
+
         secretPassword.value = "";
+
     } finally {
         secretUnlock.disabled = false;
+        secretUnlock.textContent = "UNLOCK";
     }
+}
+
+/* ===================================
+   OPEN AND CLOSE PASSWORD GATE
+=================================== */
+
+function openSecretGate() {
+    secretGate.classList.add("active");
+    secretPassword.value = "";
+    secretError.textContent = "";
+
+    setTimeout(() => {
+        secretPassword.focus();
+    }, 100);
+}
+
+function closeSecretGate() {
+    secretGate.classList.remove("active");
+    secretPassword.value = "";
+    secretError.textContent = "";
+}
+
+function closeSecretMessage() {
+    clearTimeout(letterCloseTimer);
+
+    secretMessage.classList.remove("show");
+
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+
+    setTimeout(() => {
+        secretMessage.style.display = "none";
+        showGraduationPhoto = false;
+    }, 3000);
 }
 
 secretUnlock.addEventListener("click", unlockSecret);
@@ -864,23 +920,14 @@ secretPassword.addEventListener("keydown", event => {
     }
 });
 
-document.getElementById("secretClose").addEventListener("click", () => {
-    secretGate.classList.remove("active");
-    secretPassword.value = "";
-    secretError.textContent = "";
-});
-
+secretClose.addEventListener("click", closeSecretGate);
 
 /* ===================================
-   HIDDEN FIVE-TAP TRIGGER
+   FIVE-TAP HIDDEN PASSWORD ENTRANCE
+   TOP RIGHT CORNER
 =================================== */
 
-let tapCount = 0;
-let lastTap = 0;
-let tapTimer = null;
-
 window.addEventListener("pointerdown", event => {
-
     if (
         secretGate.classList.contains("active") ||
         secretMessage.classList.contains("show")
@@ -888,44 +935,32 @@ window.addEventListener("pointerdown", event => {
         return;
     }
 
-    const now = Date.now();
-
-    const inSecretArea =
+    const hiddenPasswordArea =
         event.clientX > width * 0.82 &&
         event.clientY < height * 0.18;
 
-    if (!inSecretArea) {
-        tapCount = 0;
-        return;
-    }
+    if (!hiddenPasswordArea) return;
 
-    if (now - lastTap > 2500) {
-        tapCount = 0;
-    }
+    secretTapCount++;
 
-    lastTap = now;
-    tapCount++;
+    clearTimeout(secretTapTimer);
 
-    clearTimeout(tapTimer);
-
-    tapTimer = setTimeout(() => {
-        tapCount = 0;
+    secretTapTimer = setTimeout(() => {
+        secretTapCount = 0;
     }, 2500);
 
-    if (tapCount >= 5) {
-        tapCount = 0;
-        secretGate.classList.add("active");
-        secretPassword.focus();
+    if (secretTapCount >= 5) {
+        secretTapCount = 0;
+        openSecretGate();
     }
 });
 
-
 /* ===================================
-   HIDDEN TAURUS CONSTELLATION TRIGGER
+   HIDDEN TAURUS CONSTELLATION
+   BOTTOM LEFT CORNER
 =================================== */
 
 window.addEventListener("pointerdown", event => {
-
     if (
         secretGate.classList.contains("active") ||
         secretMessage.classList.contains("show")
@@ -944,6 +979,5 @@ window.addEventListener("pointerdown", event => {
 });
 
 </script>
-
 </body>
 </html>
