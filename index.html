@@ -77,6 +77,112 @@ canvas {
     color: rgba(220, 245, 255, .65);
 }
 
+/* Secret password interface */
+#secretGate {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(2, 8, 20, .94);
+    backdrop-filter: blur(12px);
+}
+
+#secretGate.active {
+    display: flex;
+}
+
+.secret-card {
+    width: min(100%, 340px);
+    text-align: center;
+    color: rgba(230, 255, 250, .9);
+}
+
+.secret-title {
+    font-size: 11px;
+    letter-spacing: 5px;
+    margin-bottom: 28px;
+    color: rgba(190, 240, 235, .7);
+}
+
+#secretPassword {
+    width: 100%;
+    padding: 14px 10px;
+    border: none;
+    border-bottom: 1px solid rgba(150, 240, 220, .45);
+    outline: none;
+    background: transparent;
+    color: white;
+    text-align: center;
+    font-family: Georgia, serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+}
+
+#secretPassword::placeholder {
+    color: rgba(220, 245, 255, .3);
+    font-size: 12px;
+    letter-spacing: 3px;
+}
+
+#secretUnlock {
+    margin-top: 25px;
+    padding: 10px 30px;
+    border: 1px solid rgba(150, 240, 220, .35);
+    background: transparent;
+    color: rgba(220, 255, 245, .85);
+    font-family: Georgia, serif;
+    letter-spacing: 3px;
+    font-size: 10px;
+}
+
+#secretError {
+    min-height: 20px;
+    margin-top: 18px;
+    font-size: 11px;
+    color: rgba(255, 170, 170, .75);
+    letter-spacing: 1px;
+}
+
+#secretClose {
+    margin-top: 20px;
+    border: none;
+    background: transparent;
+    color: rgba(220, 245, 255, .4);
+    font-size: 11px;
+}
+
+/* Decrypted message */
+#secretMessage {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    background: rgba(2, 8, 20, .55);
+    backdrop-filter: blur(3px);
+    opacity: 0;
+    transition: opacity 3s ease;
+}
+
+#secretMessage.show {
+    opacity: 1;
+}
+
+#secretMessage p {
+    max-width: 420px;
+    text-align: center;
+    font-family: Georgia, serif;
+    font-size: clamp(16px, 4vw, 20px);
+    line-height: 2;
+    letter-spacing: 1.5px;
+    color: rgba(230, 255, 250, .95);
+    text-shadow: 0 0 22px rgba(100, 255, 220, .4);
+}
 </style>
 </head>
 
@@ -91,7 +197,38 @@ canvas {
     <div class="footer">FOREVER UNDER THE SAME SKY</div>
 </div>
 
+<!-- Hidden password interface -->
+<div id="secretGate">
+    <div class="secret-card">
+        <div class="secret-title">A LITTLE SECRET</div>
+
+        <input
+            id="secretPassword"
+            type="password"
+            placeholder="Enter the secret"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+        >
+
+        <button id="secretUnlock">UNLOCK</button>
+
+        <div id="secretError"></div>
+
+        <button id="secretClose">CLOSE</button>
+    </div>
+</div>
+
+<!-- Decrypted message -->
+<div id="secretMessage">
+    <p id="decryptedText"></p>
+</div>
+
 <script>
+/* ===================================
+   ORIGINAL AURORA ANIMATION
+=================================== */
+
 const canvas = document.getElementById("sky");
 const ctx = canvas.getContext("2d");
 
@@ -99,11 +236,13 @@ let width, height, stars = [];
 
 function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
     width = window.innerWidth;
     height = window.innerHeight;
 
     canvas.width = width * dpr;
     canvas.height = height * dpr;
+
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     stars = Array.from({length: 130}, () => ({
@@ -121,6 +260,7 @@ resize();
 function drawStars() {
     stars.forEach(s => {
         s.a += s.speed;
+
         const opacity = 0.25 + Math.abs(Math.sin(s.a)) * 0.65;
 
         ctx.beginPath();
@@ -134,6 +274,7 @@ function drawAurora(time) {
     ctx.clearRect(0, 0, width, height);
 
     const bg = ctx.createLinearGradient(0, 0, 0, height);
+
     bg.addColorStop(0, "#020611");
     bg.addColorStop(0.55, "#07152a");
     bg.addColorStop(1, "#030712");
@@ -157,14 +298,17 @@ function drawAurora(time) {
         );
 
         wave.addColorStop(0, "rgba(0,0,0,0)");
+
         wave.addColorStop(
             0.4,
             `rgba(${color.join(",")},0.13)`
         );
+
         wave.addColorStop(
             0.7,
             `rgba(${color.join(",")},0.025)`
         );
+
         wave.addColorStop(1, "rgba(0,0,0,0)");
 
         ctx.fillStyle = wave;
@@ -196,6 +340,203 @@ function animate(time) {
 }
 
 requestAnimationFrame(animate);
+
+
+/* ===================================
+   ENCRYPTED SECRET EASTER EGG
+=================================== */
+
+const secretGate = document.getElementById("secretGate");
+const secretPassword = document.getElementById("secretPassword");
+const secretUnlock = document.getElementById("secretUnlock");
+const secretError = document.getElementById("secretError");
+const secretMessage = document.getElementById("secretMessage");
+const decryptedText = document.getElementById("decryptedText");
+
+/*
+ Password: 5+1
+
+ Encryption:
+ PBKDF2-SHA256
+ 600,000 iterations
+ AES-GCM 256-bit
+*/
+
+const encryptedData = {
+    salt: "X1yWwb38I1L5wFhrs8/zdA==",
+    iv: "/ZTp090SmZl9KbeS",
+    ciphertext: "afB/czaboaFK6JvykMdKprCqn5IeMEruJAG6aHPAOwkTJQKpZhmpob4LVOoBTDAkt8/gZN1E2d9l6U/Ns0FTl1CANV0Y4JlIMKsc"
+};
+
+function base64ToBytes(value) {
+    const binary = atob(value);
+
+    return Uint8Array.from(
+        binary,
+        character => character.charCodeAt(0)
+    );
+}
+
+async function deriveKey(password, salt) {
+    const encoder = new TextEncoder();
+
+    const material = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+    );
+
+    return crypto.subtle.deriveKey(
+        {
+            name: "PBKDF2",
+            salt: salt,
+            iterations: 600000,
+            hash: "SHA-256"
+        },
+        material,
+        {
+            name: "AES-GCM",
+            length: 256
+        },
+        false,
+        ["decrypt"]
+    );
+}
+
+async function unlockSecret() {
+    secretError.textContent = "";
+
+    const password = secretPassword.value;
+
+    if (!password) {
+        secretError.textContent = " ";
+        return;
+    }
+
+    if (!window.crypto || !window.crypto.subtle) {
+        secretError.textContent = "Secure connection required.";
+        return;
+    }
+
+    secretUnlock.disabled = true;
+
+    try {
+        const salt = base64ToBytes(encryptedData.salt);
+        const iv = base64ToBytes(encryptedData.iv);
+        const ciphertext = base64ToBytes(encryptedData.ciphertext);
+
+        const key = await deriveKey(password, salt);
+
+        const decrypted = await crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: iv
+            },
+            key,
+            ciphertext
+        );
+
+        const message = new TextDecoder().decode(decrypted);
+
+        secretGate.classList.remove("active");
+        secretPassword.value = "";
+
+        decryptedText.textContent = message;
+
+        secretMessage.style.display = "flex";
+
+        requestAnimationFrame(() => {
+            secretMessage.classList.add("show");
+        });
+
+        clearTimeout(messageTimer);
+
+        messageTimer = setTimeout(() => {
+            secretMessage.classList.remove("show");
+
+            setTimeout(() => {
+                secretMessage.style.display = "none";
+                decryptedText.textContent = "";
+            }, 3000);
+
+        }, 8000);
+
+    } catch (error) {
+        secretError.textContent = "The stars remain silent.";
+        secretPassword.value = "";
+    } finally {
+        secretUnlock.disabled = false;
+    }
+}
+
+secretUnlock.addEventListener("click", unlockSecret);
+
+secretPassword.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        unlockSecret();
+    }
+});
+
+document.getElementById("secretClose").addEventListener("click", () => {
+    secretGate.classList.remove("active");
+    secretPassword.value = "";
+    secretError.textContent = "";
+});
+
+
+/* ===================================
+   HIDDEN FIVE-TAP TRIGGER
+=================================== */
+
+let tapCount = 0;
+let lastTap = 0;
+let tapTimer = null;
+let messageTimer = null;
+
+window.addEventListener("pointerdown", event => {
+
+    if (
+        secretGate.classList.contains("active") ||
+        secretMessage.classList.contains("show")
+    ) {
+        return;
+    }
+
+    const now = Date.now();
+
+    const inSecretArea =
+        event.clientX > width * 0.82 &&
+        event.clientY < height * 0.18;
+
+    if (!inSecretArea) {
+        tapCount = 0;
+        return;
+    }
+
+    if (now - lastTap > 2500) {
+        tapCount = 0;
+    }
+
+    lastTap = now;
+    tapCount++;
+
+    clearTimeout(tapTimer);
+
+    tapTimer = setTimeout(() => {
+        tapCount = 0;
+    }, 2500);
+
+    if (tapCount >= 5) {
+        tapCount = 0;
+
+        secretGate.classList.add("active");
+
+        secretPassword.focus();
+    }
+});
+
 </script>
 
 </body>
