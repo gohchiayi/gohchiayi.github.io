@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -22,9 +21,7 @@ html, body {
     font-family: Georgia, "Times New Roman", serif;
 }
 
-body {
-    color: white;
-}
+body { color: white; }
 
 canvas {
     position: fixed;
@@ -51,7 +48,7 @@ canvas {
     font-size: clamp(30px, 8vw, 48px);
     font-weight: 400;
     letter-spacing: 8px;
-    text-shadow: 0 0 25px rgba(130, 255, 220, .45);
+    text-shadow: 0 0 25px rgba(130,255,220,.45);
 }
 
 .subtitle {
@@ -59,14 +56,14 @@ canvas {
     font-family: Arial, sans-serif;
     font-size: 10px;
     letter-spacing: 5px;
-    color: rgba(220, 245, 255, .7);
+    color: rgba(220,245,255,.7);
 }
 
 .line {
     width: 55px;
     height: 1px;
     margin: 32px 0;
-    background: rgba(180, 255, 240, .7);
+    background: rgba(180,255,240,.7);
     box-shadow: 0 0 12px #8affdf;
 }
 
@@ -74,10 +71,10 @@ canvas {
     font-family: Arial, sans-serif;
     font-size: 9px;
     letter-spacing: 3px;
-    color: rgba(220, 245, 255, .65);
+    color: rgba(220,245,255,.65);
 }
 
-/* Secret password interface */
+/* Password interface */
 
 #secretGate {
     position: fixed;
@@ -87,32 +84,30 @@ canvas {
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: rgba(2, 8, 20, .94);
+    background: rgba(2,8,20,.94);
     backdrop-filter: blur(12px);
 }
 
-#secretGate.active {
-    display: flex;
-}
+#secretGate.active { display: flex; }
 
 .secret-card {
     width: min(100%, 340px);
     text-align: center;
-    color: rgba(230, 255, 250, .9);
+    color: rgba(230,255,250,.9);
 }
 
 .secret-title {
     font-size: 11px;
     letter-spacing: 5px;
     margin-bottom: 28px;
-    color: rgba(190, 240, 235, .7);
+    color: rgba(190,240,235,.7);
 }
 
 #secretPassword {
     width: 100%;
     padding: 14px 10px;
     border: none;
-    border-bottom: 1px solid rgba(150, 240, 220, .45);
+    border-bottom: 1px solid rgba(150,240,220,.45);
     outline: none;
     background: transparent;
     color: white;
@@ -123,7 +118,7 @@ canvas {
 }
 
 #secretPassword::placeholder {
-    color: rgba(220, 245, 255, .3);
+    color: rgba(220,245,255,.3);
     font-size: 12px;
     letter-spacing: 3px;
 }
@@ -131,9 +126,9 @@ canvas {
 #secretUnlock {
     margin-top: 25px;
     padding: 10px 30px;
-    border: 1px solid rgba(150, 240, 220, .35);
+    border: 1px solid rgba(150,240,220,.35);
     background: transparent;
-    color: rgba(220, 255, 245, .85);
+    color: rgba(220,255,245,.85);
     font-family: Georgia, serif;
     letter-spacing: 3px;
     font-size: 10px;
@@ -143,7 +138,7 @@ canvas {
     min-height: 20px;
     margin-top: 18px;
     font-size: 11px;
-    color: rgba(255, 170, 170, .75);
+    color: rgba(255,170,170,.75);
     letter-spacing: 1px;
 }
 
@@ -151,11 +146,11 @@ canvas {
     margin-top: 20px;
     border: none;
     background: transparent;
-    color: rgba(220, 245, 255, .4);
+    color: rgba(220,245,255,.4);
     font-size: 11px;
 }
 
-/* Hidden love letter */
+/* Graduation message */
 
 #secretMessage {
     position: fixed;
@@ -164,86 +159,85 @@ canvas {
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 24px 20px;
-    background: rgba(2, 8, 20, .78);
-    backdrop-filter: blur(8px);
+    padding: 20px;
+    background: rgba(2,8,20,.25);
     opacity: 0;
     transition: opacity 3s ease;
 }
 
-#secretMessage.show {
-    opacity: 1;
-}
+#secretMessage.show { opacity: 1; }
 
 .letter {
     width: min(100%, 540px);
-    max-height: calc(100dvh - 48px);
+    max-height: calc(100dvh - 40px);
     overflow-y: auto;
-    padding: 28px 22px;
+    padding: 30px 23px;
     text-align: center;
+    background: rgba(3,10,24,.38);
+    border: 1px solid rgba(190,240,235,.16);
+    border-radius: 14px;
+    backdrop-filter: blur(5px);
     scrollbar-width: thin;
-    scrollbar-color: rgba(150, 240, 220, .3) transparent;
+    scrollbar-color: rgba(150,240,220,.3) transparent;
 }
 
 .letter-title {
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(25px, 7vw, 32px);
+    font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
+    font-size: clamp(25px,7vw,32px);
     font-weight: 400;
     letter-spacing: 5px;
-    color: rgba(230, 255, 250, .98);
-    text-shadow: 0 0 25px rgba(100, 255, 220, .45);
+    color: rgba(245,250,255,.98);
+    text-shadow: 0 0 25px rgba(100,255,220,.45);
+    opacity: 0;
+    transform: translateY(15px);
+    transition: opacity 2.5s ease, transform 2.5s ease;
+}
+
+#secretMessage.show .letter-title {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .letter-subtitle {
     margin-top: 14px;
-    margin-bottom: 32px;
+    margin-bottom: 25px;
     font-size: 11px;
     letter-spacing: 3px;
-    color: rgba(190, 240, 235, .65);
+    color: rgba(220,240,245,.75);
 }
 
 .letter-divider {
     width: 45px;
     height: 1px;
-    margin: 0 auto 30px;
-    background: rgba(180, 255, 240, .65);
+    margin: 0 auto 25px;
+    background: rgba(180,255,240,.65);
     box-shadow: 0 0 12px #8affdf;
 }
 
 .letter-body {
     text-align: left;
     font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
-    font-size: clamp(15px, 4vw, 17px);
-    line-height: 2.15;
+    font-size: clamp(15px,4vw,17px);
+    line-height: 2.05;
     letter-spacing: 1px;
-    color: rgba(230, 255, 250, .94);
-    text-shadow: 0 0 15px rgba(100, 255, 220, .2);
+    color: rgba(245,250,255,.96);
+    text-shadow: 0 0 15px rgba(100,255,220,.2);
     white-space: pre-wrap;
     overflow-wrap: break-word;
 }
 
 .letter-signature {
-    margin-top: 32px;
+    margin-top: 28px;
     text-align: right;
     font-family: Georgia, "Songti SC", "Noto Serif SC", serif;
     font-size: 15px;
     line-height: 2;
     letter-spacing: 1px;
-    color: rgba(200, 245, 235, .85);
+    color: rgba(220,245,240,.9);
 }
 
 @media (max-height: 600px) {
-    .letter {
-        padding: 16px 18px;
-    }
-
-    .letter-subtitle {
-        margin-bottom: 20px;
-    }
-
-    .letter-divider {
-        margin-bottom: 20px;
-    }
+    .letter { padding: 18px; }
 }
 </style>
 </head>
@@ -259,7 +253,7 @@ canvas {
     <div class="footer">FOREVER UNDER THE SAME SKY</div>
 </div>
 
-<!-- Hidden password interface -->
+<!-- Password interface -->
 
 <div id="secretGate">
     <div class="secret-card">
@@ -275,22 +269,20 @@ canvas {
         >
 
         <button id="secretUnlock">UNLOCK</button>
-
         <div id="secretError"></div>
-
         <button id="secretClose">CLOSE</button>
     </div>
 </div>
 
-<!-- Hidden love letter -->
+<!-- Graduation letter -->
 
 <div id="secretMessage">
     <div class="letter">
 
-        <div class="letter-title">星河之约</div>
+        <div class="letter-title">致青春，致未来</div>
 
         <div class="letter-subtitle">
-            献给吴嘉怡 · 傅玄策
+            献给吴嘉怡
         </div>
 
         <div class="letter-divider"></div>
@@ -298,7 +290,7 @@ canvas {
         <div class="letter-body" id="decryptedText"></div>
 
         <div class="letter-signature">
-            —— 傅玄策，写给吴嘉怡。
+            —— 傅玄策
         </div>
 
     </div>
@@ -314,6 +306,10 @@ const canvas = document.getElementById("sky");
 const ctx = canvas.getContext("2d");
 
 let width, height, stars = [];
+let showGraduationPhoto = false;
+
+const graduationPhoto = new Image();
+graduationPhoto.src = "images/chiayi.jpg";
 
 function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -354,23 +350,61 @@ function drawStars() {
 function drawAurora(time) {
     ctx.clearRect(0, 0, width, height);
 
-    const bg = ctx.createLinearGradient(0, 0, 0, height);
+    if (
+        showGraduationPhoto &&
+        graduationPhoto.complete &&
+        graduationPhoto.naturalWidth > 0
+    ) {
+        const imageRatio =
+            graduationPhoto.naturalWidth /
+            graduationPhoto.naturalHeight;
 
-    bg.addColorStop(0, "#020611");
-    bg.addColorStop(0.55, "#07152a");
-    bg.addColorStop(1, "#030712");
+        const screenRatio = width / height;
 
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, width, height);
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (imageRatio > screenRatio) {
+            drawHeight = height;
+            drawWidth = height * imageRatio;
+            offsetX = (width - drawWidth) / 2;
+            offsetY = 0;
+        } else {
+            drawWidth = width;
+            drawHeight = width / imageRatio;
+            offsetX = 0;
+            offsetY = (height - drawHeight) / 2;
+        }
+
+        ctx.drawImage(
+            graduationPhoto,
+            offsetX,
+            offsetY,
+            drawWidth,
+            drawHeight
+        );
+
+        ctx.fillStyle = "rgba(2,7,18,.53)";
+        ctx.fillRect(0, 0, width, height);
+
+    } else {
+        const bg = ctx.createLinearGradient(0, 0, 0, height);
+
+        bg.addColorStop(0, "#020611");
+        bg.addColorStop(0.55, "#07152a");
+        bg.addColorStop(1, "#030712");
+
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, width, height);
+    }
 
     ctx.save();
     ctx.globalCompositeOperation = "screen";
 
     const colors = [
-        [30, 255, 190],
-        [30, 180, 255],
-        [130, 90, 255],
-        [40, 255, 220]
+        [30,255,190],
+        [30,180,255],
+        [130,90,255],
+        [40,255,220]
     ];
 
     colors.forEach((color, index) => {
@@ -424,17 +458,8 @@ requestAnimationFrame(animate);
 
 
 /* ===================================
-   ENCRYPTED SECRET LOVE LETTER
+   ENCRYPTED GRADUATION MESSAGE
 =================================== */
-
-/*
- Password: 5+1
-
- Encryption:
- PBKDF2-SHA256
- 600,000 iterations
- AES-GCM 256-bit
-*/
 
 const secretGate = document.getElementById("secretGate");
 const secretPassword = document.getElementById("secretPassword");
@@ -444,9 +469,9 @@ const secretMessage = document.getElementById("secretMessage");
 const decryptedText = document.getElementById("decryptedText");
 
 const encryptedData = {
-    salt: "fh4n729GZ2yK7VbW0vbzFw==",
-    iv: "mOrquzYa9pzvclSL",
-    ciphertext: "AgmMyXuMtD16zLAnFOzbpQf2ABlyOYxPCLxnRi7OYHIJJa6z2LOtQG8glGQoNMbnHEDyVQUQ7vLqOzSkPwFR5l7732IfUalBW4YT4M+/SaoCy1xcQ2R65Q0C298PpqL8SrL3IBb7TLTjAGyvpuokqLuntaueuO0y0Y4DrnxEq9umja1FnPP/vihETiBMys9ST+k21Y38tHLR+OeASZVxNxqvYNDte17nHF5jml9IJfCQJeLn4QqkK9FKwak3fMKiq0/wayjtBoQ5MSWo1Nn8vEFGGFfS3foEyb35PG9WYAq4rvFTwmwXLkzix2DUCLKBHnnJ0Ft5UCG3BRnnRrVAQDoQTGTBNyHhz/kSFCsxFZgiv2bCs3DmjYY+7R58+NzusHeIWRyHNRYPyRgjg2DKu/4EvDRcbXjCRNc5JSShBCcw/fv6RO2JTFs6/6onNBbE1jcNVc3nuUg7M2fEdYf4RAJGOPfSHRvwPOcbl99kFq0/x4Cu5gv+Ou74krm9msjpbLspw7tsWGcWohf2tmj3A5gZYH76aWz0IwkmOXNYmwZq6pfLS0Od/BAeeP/bms01hb4SM3/jBrQx9jfwtzcMjF4LYbiyhLVBg3WA9i0SlTZ7hfpJxrwuaOXvUZ71JBDrN/B5eGhGPkIQgqshS3xUlUsfsCKBzXXI/VXCKYqDe3yi+dU+ADOdZ0fmLyqbrVzRdq6UrBBqTt67sZ7xkLFsb3nhS9Nt2tu5OpJm+elskyBBwx2GT0H+efLnTWQX0+PfBEMT9m3uPj1aRXwNkMDWPhvae7lxlyZl/siSCBpS63VHXf62+yDUr3T+KMR55ospyAXbmi/lyp8gPjMvoHg48YyvbrC6f1JVf+TWH5NeEpZ2j3ZrCL9xoEve5mimMFv9ojG7r0bXVrFz7n+S1Rj/InPiOlEEjhzisV35SeOBiOkuGhkp2C7O5+q0X6BG6zWlL4bmu/k/fIqTWkKdOs4s91NW52iQcpDD3XLfrBr0PISY2Vwtwz/lG6G7QN6ildxB6OP/Tca+lQiKBkKJe7bX/uMBTEzQddxuhy5HB0+0lQyLeZoq2OBWIRrjKtHQDckgnFGsmtEjivP06PrqGeN517n1VG8aEYUiG7mg2mC97lQj81nMIuCBFkhXNA=="
+    salt: "k1WOQVntrPYbU3maxr8Yrg==",
+    iv: "276FcYUxCIDRdVK4",
+    ciphertext: "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"
 };
 
 function base64ToBytes(value) {
@@ -472,7 +497,7 @@ async function deriveKey(password, salt) {
     return crypto.subtle.deriveKey(
         {
             name: "PBKDF2",
-            salt: salt,
+            salt,
             iterations: 600000,
             hash: "SHA-256"
         },
@@ -514,10 +539,7 @@ async function unlockSecret() {
         const key = await deriveKey(password, salt);
 
         const decrypted = await crypto.subtle.decrypt(
-            {
-                name: "AES-GCM",
-                iv: iv
-            },
+            { name: "AES-GCM", iv },
             key,
             ciphertext
         );
@@ -529,6 +551,9 @@ async function unlockSecret() {
 
         decryptedText.textContent = message;
 
+        // Show Chiayi's photo behind the running aurora
+        showGraduationPhoto = true;
+
         secretMessage.style.display = "flex";
 
         requestAnimationFrame(() => {
@@ -538,15 +563,19 @@ async function unlockSecret() {
         clearTimeout(messageTimer);
         clearTimeout(fadeTimer);
 
+        // Give enough time to read the full graduation letter
         messageTimer = setTimeout(() => {
             secretMessage.classList.remove("show");
 
             fadeTimer = setTimeout(() => {
                 secretMessage.style.display = "none";
                 decryptedText.textContent = "";
+
+                // Restore the original aurora background
+                showGraduationPhoto = false;
             }, 3000);
 
-        }, 8000);
+        }, 60000);
 
     } catch (error) {
         secretError.textContent = "The stars remain silent.";
@@ -614,9 +643,7 @@ window.addEventListener("pointerdown", event => {
 
     if (tapCount >= 5) {
         tapCount = 0;
-
         secretGate.classList.add("active");
-
         secretPassword.focus();
     }
 });
