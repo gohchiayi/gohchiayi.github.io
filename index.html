@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -246,6 +247,9 @@ canvas {
 
 <canvas id="sky"></canvas>
 
+<!-- Background music -->
+<audio id="bgMusic" src="audio/graduation.mp3" preload="auto" loop></audio>
+
 <div class="content">
     <div class="name">GOH CHIAYI</div>
     <div class="subtitle">A SKY FULL OF MEMORIES</div>
@@ -468,6 +472,9 @@ const secretError = document.getElementById("secretError");
 const secretMessage = document.getElementById("secretMessage");
 const decryptedText = document.getElementById("decryptedText");
 
+// Background music element
+const bgMusic = document.getElementById("bgMusic");
+
 const encryptedData = {
     salt: "k1WOQVntrPYbU3maxr8Yrg==",
     iv: "276FcYUxCIDRdVK4",
@@ -553,6 +560,12 @@ async function unlockSecret() {
 
         // Show Chiayi's photo behind the running aurora
         showGraduationPhoto = true;
+
+        // Play graduation background music
+        bgMusic.volume = 0.35;
+        bgMusic.play().catch(() => {
+            console.log("Music playback was blocked by the browser.");
+        });
 
         secretMessage.style.display = "flex";
 
