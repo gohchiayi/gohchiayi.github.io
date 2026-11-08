@@ -3,7 +3,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#030613">
+
 <title>Starburst — Goh Chiayi</title>
 
 <style>
@@ -11,17 +13,18 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-body {
+html, body {
     width: 100%;
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
-    background:
-        radial-gradient(ellipse at 50% 100%, #101b42 0%, #070d20 45%, #02040d 100%);
-    color: white;
+    background: #030613;
+    touch-action: none;
+    overscroll-behavior: none;
     font-family: Georgia, serif;
-    touch-action: manipulation;
+    color: white;
 }
 
 canvas {
@@ -29,46 +32,74 @@ canvas {
     inset: 0;
     width: 100%;
     height: 100%;
+    display: block;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .content {
     position: fixed;
     inset: 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    pointer-events: none;
     text-align: center;
+    pointer-events: none;
     z-index: 2;
+    padding: 20px;
 }
 
 h1 {
     font-size: clamp(30px, 8vw, 60px);
     font-weight: 300;
     letter-spacing: 9px;
-    text-shadow: 0 0 25px #75dfff;
+    color: #ffffff;
+    text-shadow: 0 0 15px #75dfff,
+                 0 0 35px #75dfff;
+    animation: glow 3s infinite alternate;
 }
 
 .subtitle {
-    margin-top: 18px;
+    margin-top: 20px;
     font-size: 11px;
     letter-spacing: 5px;
-    color: #a8cde9;
+    color: #b8d8ed;
+}
+
+.line {
+    width: 80px;
+    height: 1px;
+    margin-top: 28px;
+    background: #8ceaff;
+    box-shadow: 0 0 15px #8ceaff;
 }
 
 .instruction {
     position: absolute;
     bottom: 12%;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 3px;
-    color: #9db9d8;
+    color: #a9c5df;
     animation: pulse 2s infinite alternate;
 }
 
+@keyframes glow {
+    from {
+        opacity: .7;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 @keyframes pulse {
-    from { opacity: .35; }
-    to { opacity: 1; }
+    from {
+        opacity: .35;
+    }
+    to {
+        opacity: 1;
+    }
 }
 </style>
 </head>
@@ -78,16 +109,29 @@ h1 {
 <canvas id="starCanvas"></canvas>
 
 <div class="content">
-*     <h1>STARBURST ✦</h1>
-*     <div class="subtitle">A LITTLE UNIVERSE OF OUR OWN</div>
-*     <div class="instruction">TAP ANYWHERE TO CREATE MAGIC</div>
+* *     <h1>STARBURST ✦</h1>
+* 
+*     <div class="subtitle">
+*         A LITTLE UNIVERSE OF OUR OWN
+*     </div>
+* 
+*     <div class="line"></div>
+* 
+*     <div class="instruction">
+*         TAP ANYWHERE TO CREATE MAGIC
+*     </div>
 * </div>
 * 
 * <script>
-* const canvas = document.getElementById("starCanvas");
-* const ctx = canvas.getContext("2d");
+* "use strict";
 * 
-* let width, height;
+* const canvas = document.getElementById("starCanvas");
+* const ctx = canvas.getContext("2d", {
+*     alpha: false
+* });
+* 
+* let width = 0;
+* let height = 0;
 * let stars = [];
 * let particles = [];
 * let bursts = [];
@@ -97,144 +141,266 @@ h1 {
 *     "#b59aff",
 *     "#ffffff",
 *     "#72ffd9",
-*     "#e5c4ff"
+*     "#e5c4ff",
+*     "#a7c7ff"
 * ];
 * 
+* // =================================
+* // SCREEN SIZE
+* // =================================
+* 
 * function resize() {
-*     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+*     const dpr = Math.min(
+*         window.devicePixelRatio || 1,
+*         2
+*     );
 * 
 *     width = window.innerWidth;
 *     height = window.innerHeight;
 * 
-*     canvas.width = width * dpr;
-*     canvas.height = height * dpr;
+*     canvas.width = Math.floor(width * dpr);
+*     canvas.height = Math.floor(height * dpr);
 * 
-*     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+*     ctx.setTransform(
+*         dpr, 0,
+*         0, dpr,
+*         0, 0
+*     );
 * 
 *     stars = [];
 * 
-*     for (let i = 0; i < 120; i++) {
+*     for (let i = 0; i < 140; i++) {
 *         stars.push({
 *             x: Math.random() * width,
 *             y: Math.random() * height,
 *             size: Math.random() * 1.5 + 0.3,
-*             phase: Math.random() * Math.PI * 2
+*             phase: Math.random() * Math.PI * 2,
+*             speed: Math.random() * 0.02 + 0.005
 *         });
 *     }
 * }
 * 
+* // =================================
+* // CREATE STAR BURST
+* // =================================
+* 
 * function createBurst(x, y) {
+* 
 *     const color = colors[
 *         Math.floor(Math.random() * colors.length)
 *     ];
 * 
+*     // Expanding light ring
 *     bursts.push({
-*         x,
-*         y,
-*         radius: 0,
+*         x: x,
+*         y: y,
+*         radius: 2,
 *         opacity: 1,
-*         color
+*         color: color
 *     });
 * 
-*     const count = 48;
+*     // Central flash
+*     bursts.push({
+*         x: x,
+*         y: y,
+*         radius: 0,
+*         opacity: 0.8,
+*         color: "#ffffff",
+*         flash: true
+*     });
 * 
-*     for (let i = 0; i < count; i++) {
-*         const angle = Math.random() * Math.PI * 2;
-*         const speed = Math.random() * 5 + 1.5;
+*     // Create 48 particles
+*     const particleCount = 48;
+* 
+*     for (let i = 0; i < particleCount; i++) {
+* 
+*         const angle =
+*             (Math.PI * 2 / particleCount) * i
+*             + Math.random() * 0.15;
+* 
+*         const speed =
+*             Math.random() * 5 + 2;
 * 
 *         particles.push({
-*             x,
-*             y,
+*             x: x,
+*             y: y,
+* 
 *             vx: Math.cos(angle) * speed,
 *             vy: Math.sin(angle) * speed,
-*             size: Math.random() * 2.5 + 0.7,
+* 
+*             size: Math.random() * 2.5 + 1,
+* 
 *             opacity: 1,
-*             color,
+* 
+*             color: Math.random() > 0.3
+*                 ? color
+*                 : "#ffffff",
+* 
 *             gravity: Math.random() * 0.025
+*         });
+*     }
+* 
+*     // Extra little sparkles
+*     for (let i = 0; i < 15; i++) {
+* 
+*         const angle = Math.random() * Math.PI * 2;
+*         const speed = Math.random() * 3 + 1;
+* 
+*         particles.push({
+*             x: x,
+*             y: y,
+* 
+*             vx: Math.cos(angle) * speed,
+*             vy: Math.sin(angle) * speed,
+* 
+*             size: Math.random() * 1.5 + 0.5,
+*             opacity: 1,
+*             color: "#ffffff",
+*             gravity: 0
 *         });
 *     }
 * }
 * 
+* // =================================
+* // DRAW BACKGROUND STARS
+* // =================================
+* 
 * function drawStars(time) {
+* 
 *     stars.forEach(star => {
+* 
+*         star.phase += star.speed;
+* 
 *         const alpha =
-*             0.3 + Math.abs(Math.sin(time * 0.001 + star.phase)) * 0.7;
+*             0.25 +
+*             Math.abs(Math.sin(star.phase)) * 0.75;
 * 
-*         ctx.beginPath();
-*         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-* 
-*         ctx.fillStyle = `rgba(220,240,255,${alpha})`;
-*         ctx.shadowBlur = 8;
-*         ctx.shadowColor = "#80dfff";
-*         ctx.fill();
-*     });
-* 
-*     ctx.shadowBlur = 0;
-* }
-* 
-* function drawBursts() {
-*     bursts.forEach((burst, index) => {
-*         ctx.beginPath();
-*         ctx.arc(burst.x, burst.y, burst.radius, 0, Math.PI * 2);
-* 
-*         ctx.strokeStyle = burst.color;
-*         ctx.globalAlpha = burst.opacity;
-*         ctx.lineWidth = 2;
-*         ctx.shadowBlur = 20;
-*         ctx.shadowColor = burst.color;
-*         ctx.stroke();
-* 
-*         burst.radius += 3;
-*         burst.opacity -= 0.035;
-* 
-*         if (burst.opacity <= 0) {
-*             bursts.splice(index, 1);
-*         }
-*     });
-* 
-*     ctx.globalAlpha = 1;
-*     ctx.shadowBlur = 0;
-* }
-* 
-* function drawParticles() {
-*     particles.forEach((particle, index) => {
 *         ctx.beginPath();
 * 
 *         ctx.arc(
-*             particle.x,
-*             particle.y,
-*             particle.size,
+*             star.x,
+*             star.y,
+*             star.size,
 *             0,
 *             Math.PI * 2
 *         );
 * 
-*         ctx.fillStyle = particle.color;
-*         ctx.globalAlpha = particle.opacity;
-*         ctx.shadowBlur = 15;
-*         ctx.shadowColor = particle.color;
+*         ctx.fillStyle =
+*             `rgba(220,240,255,${alpha})`;
+* 
+*         ctx.shadowBlur = 8;
+*         ctx.shadowColor = "#80dfff";
+* 
 *         ctx.fill();
-* 
-*         particle.x += particle.vx;
-*         particle.y += particle.vy;
-* 
-*         particle.vx *= 0.985;
-*         particle.vy *= 0.985;
-*         particle.vy += particle.gravity;
-* 
-*         particle.opacity -= 0.012;
-*         particle.size *= 0.995;
-* 
-*         if (particle.opacity <= 0) {
-*             particles.splice(index, 1);
-*         }
 *     });
+* 
+*     ctx.shadowBlur = 0;
+* }
+* 
+* // =================================
+* // DRAW EXPANDING RINGS
+* // =================================
+* 
+* function drawBursts() {
+* 
+*     for (let i = bursts.length - 1; i >= 0; i--) {
+* 
+*         const burst = bursts[i];
+* 
+*         ctx.beginPath();
+* 
+*         ctx.arc(
+*             burst.x,
+*             burst.y,
+*             burst.radius,
+*             0,
+*             Math.PI * 2
+*         );
+* 
+*         ctx.strokeStyle = burst.color;
+*         ctx.globalAlpha = burst.opacity;
+*         ctx.lineWidth = burst.flash ? 3 : 2;
+* 
+*         ctx.shadowBlur = 25;
+*         ctx.shadowColor = burst.color;
+* 
+*         ctx.stroke();
+* 
+*         burst.radius += burst.flash ? 5 : 3.5;
+*         burst.opacity -= burst.flash ? 0.09 : 0.025;
+* 
+*         if (burst.opacity <= 0) {
+*             bursts.splice(i, 1);
+*         }
+*     }
 * 
 *     ctx.globalAlpha = 1;
 *     ctx.shadowBlur = 0;
 * }
 * 
+* // =================================
+* // DRAW PARTICLES
+* // =================================
+* 
+* function drawParticles() {
+* 
+*     for (let i = particles.length - 1; i >= 0; i--) {
+* 
+*         const p = particles[i];
+* 
+*         ctx.beginPath();
+* 
+*         ctx.arc(
+*             p.x,
+*             p.y,
+*             Math.max(0.1, p.size),
+*             0,
+*             Math.PI * 2
+*         );
+* 
+*         ctx.fillStyle = p.color;
+*         ctx.globalAlpha = p.opacity;
+* 
+*         ctx.shadowBlur = 18;
+*         ctx.shadowColor = p.color;
+* 
+*         ctx.fill();
+* 
+*         // Movement
+*         p.x += p.vx;
+*         p.y += p.vy;
+* 
+*         p.vx *= 0.985;
+*         p.vy *= 0.985;
+* 
+*         p.vy += p.gravity;
+* 
+*         p.opacity -= 0.012;
+*         p.size *= 0.995;
+* 
+*         if (p.opacity <= 0) {
+*             particles.splice(i, 1);
+*         }
+*     }
+* 
+*     ctx.globalAlpha = 1;
+*     ctx.shadowBlur = 0;
+* }
+* 
+* // =================================
+* // ANIMATION LOOP
+* // =================================
+* 
 * function animate(time) {
-*     ctx.clearRect(0, 0, width, height);
+* 
+*     ctx.fillStyle = "#030613";
+* 
+*     ctx.fillRect(
+*         0,
+*         0,
+*         width,
+*         height
+*     );
 * 
 *     drawStars(time);
 *     drawBursts();
@@ -243,14 +409,54 @@ h1 {
 *     requestAnimationFrame(animate);
 * }
 * 
-* canvas.addEventListener("pointerdown", event => {
-*     createBurst(event.clientX, event.clientY);
-* });
+* // =================================
+* // TOUCH & MOUSE INTERACTION
+* // =================================
 * 
+* function handleInteraction(event) {
+* 
+*     event.preventDefault();
+* 
+*     const x = event.clientX;
+*     const y = event.clientY;
+* 
+*     createBurst(x, y);
+* }
+* 
+* // Listen to the entire screen
+* window.addEventListener(
+*     "pointerdown",
+*     handleInteraction,
+*     { passive: false }
+* );
+* 
+* // Fallback for older touch devices
+* window.addEventListener(
+*     "touchstart",
+*     function(event) {
+* 
+*         if (window.PointerEvent) return;
+* 
+*         event.preventDefault();
+* 
+*         const touch = event.changedTouches[0];
+* 
+*         createBurst(
+*             touch.clientX,
+*             touch.clientY
+*         );
+* 
+*     },
+*     { passive: false }
+* );
+* 
+* // Resize
 * window.addEventListener("resize", resize);
 * 
+* // Start
 * resize();
 * requestAnimationFrame(animate);
+* 
 * </script>
 * 
 * </body>
